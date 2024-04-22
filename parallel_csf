@@ -10,29 +10,51 @@ numjobs=1
 #cat "$path_raw/input_rm.txt" | parallel -j "$numjobs" rm {}
 #------
 
-#create list of subjects
+if [ ! -f subjList.txt ]; then
+    ls | grep ^sub- > subjList.txt
+fi
+
 if [ ! -f subjList.txt ]; then
     find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > subjList.txt
 fi
 
 #0 make timings
-# Loop over all subjects and format timing files into FSL format
-for subj in `cat subjList.txt`; do
-	derivatives_dir="derivatives/$subj/func"
-	cd "$subj/func"
-	echo "Processing subject: $subj"
+function makeTimings {
+	input="$1"
+	output="${input%_task-scap_events.tsv}"
 	
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1}}' > "../../$derivatives_dir/${subj}_low_WM.txt"
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1}}' > "../../$derivatives_dir/${$subj}_high_WM.txt"
+	if [ -f "$output" ]; then
+        	echo "Output file $output already exists, skipping..."
+	else
+		echo "processing $input"
+		cat "$input" | awk '{if ($3=="1" || $3=="2" || $3=="3" || $3=="4" || $3=="5" || $3=="6") {print $1, $2, 1}}' > "${output}_low_WM.txt"
+		cat "$input" | awk '{if ($3=="7" || $3=="8" || $3=="9" || $3=="10" || $3=="11" || $3=="12") {print $1, $2, 1}}' > "${output}_high_WM.txt"
+		echo "${output}_high_WM.txt"
+	fi
+}
 
-	# Now convert to AFNI format
-	echo "Converting to AFNI format..."
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_low_WM.txt" -write_timing "../../$derivatives_dir/${subj}_low_WM.txt"
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_high_WM.txt" -write_timing "../../$derivatives_dir/${subj}_high_WM.txt"
+export -f makeTimings
+find "$path_raw" -type f -name '*sub-*task-scap_events.tsv' > "$path_raw/input_files.txt"
+cat "$path_raw/input_files.txt" | parallel -j "$numjobs" makeTimings {}
+rm "$path_raw/input_files.txt"
+#----
+#0.1 convert to AFNI
+function convert_AFNI {
+	input="$1"
+	output="${input%txt}"
 
-	cd ../..
-done
+	if [ -f "$output" ]; then
+        	echo "Output file $output already exists, skipping..."
+	else
+		timing_tool.py -fsl_timing_files "$input" -write_timing "${output}1D"
+	fi
+}
 
+export -f convert_AFNI
+find "$path_raw" -type f -name '*_WM.txt' > "$path_raw/input_files.txt"
+cat "$path_raw/input_files.txt" | parallel -j "$numjobs" convert_AFNI {}
+rm "$path_raw/input_files.txt"
+#-----
 #1
 function smooth { 
     input="$1"
@@ -79,8 +101,29 @@ rm "$path_input/input_files.txt"
 
 #---------------------
 
-#3 make epi into same size as t1 brain mask
-function resample { 
+#3 make binarized image into same size as t1 brain mask
+function resample {
+    input="$1"
+    output="${input%.nii.gz}_bin_resampled.nii.gz"
+    mask="${input%_class-CSF_bin.nii.gz}_brainmask.nii.gz"  
+    
+    if [ -f "$output" ]; then
+        echo "Output file $output already exists, skipping..."
+    else
+        3dresample -master "$mask" -prefix "$output" -input "$input"
+        echo "Resampled $input and saved as $output"
+    fi
+    
+}
+
+export -f resample
+
+find "$path_raw" -type f -name '*CSF_probtissue_bin.nii.gz' > "$path_raw/input_files.txt"
+cat "$path_raw/input_files.txt" | parallel -j "$numjobs" resample {} "$mask"
+rm "$path_raw/input_files.txt"
+
+#4 make epi smoothed same size as t1 csf scan
+function resample2 { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
     mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_resampled.nii.gz"
@@ -94,9 +137,9 @@ function resample {
     fi
 }
 
-export -f resample
+export -f resample2
 find "$path_input" -type f -name '*_task-scap_bold_space-MNI152*_preproc_smoothed.nii.gz' > "$path_input/input_files.txt"
-cat "$path_input/input_files.txt" | parallel -j "$numjobs" resample {} "$mask"
+cat "$path_input/input_files.txt" | parallel -j "$numjobs" resample2 {} "$mask"
 rm "$path_input/input_files.txt"
 
 #5
@@ -111,7 +154,11 @@ function mean_ts {  #make sure its MNI!!!!!!
 	fslmeants -i "$input" -o "$output" -m "$mask"
 }
 export -f mean_ts
+<<<<<<< HEAD
 find "$path_raw" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_input/input_files.txt"
+=======
+find "$path_raw/input_files.txt" -type f -name '_preproc_smoothed_resampled.nii.gz' > "$path_input/input_files.txt"
+>>>>>>> aea18fe3e736a3715c305f11d340cd29819816ef
 cat "$path_input/input_files.txt" | parallel -j "$numjobs" mean_ts {} "$mask"
 rm "$path_input/input_files.txt"
 
@@ -153,6 +200,7 @@ export -f deconvolve
 find "$path_input" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed_resampled.nii.gz' > "$path_input/input_files.txt"
 
 
+<<<<<<< HEAD
 if [ ! -f subjList.txt ]; then
         ls -d sub-?? > subjList.txt
 fi
@@ -169,13 +217,20 @@ for subj in `cat participants.tsv'[0]'` ; do
 done
 
 
+=======
+>>>>>>> aea18fe3e736a3715c305f11d340cd29819816ef
 -miniconda
 -fsl
 -numpy
 -scipy
 -pandas
+<<<<<<< HEAD
 -afni
 -ANTs
+=======
+afni
+ANTs
+>>>>>>> aea18fe3e736a3715c305f11d340cd29819816ef
 env neuroimg
 -nibabel 
 -nilearn
@@ -185,19 +240,31 @@ env neuroimg
 3dDeconvolve \
 -force_TR 2 \
 -mask '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz' \
+<<<<<<< HEAD
 -input '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed_resampled2.nii.gz' \
 -polort 'A' \
 -local_times \
 -num_stimts 10 \
 -stim_times 1 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/low_WM.txt' 'GAM' -stim_label 1 low_WM \
 -stim_times 2 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/high_WM.txt' 'GAM' -stim_label 2 high_WM \
+=======
+-input '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed_resampled.nii.gz' \
+-polort 'A' \
+-num_stimts 10 \
+-stim_times 1 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_low_WM.txt' 'GAM' -stim_label 1 low_WM \
+-stim_times 2 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_high_WM.txt' 'GAM' -stim_label 2 high_WM.txt \
+>>>>>>> aea18fe3e736a3715c305f11d340cd29819816ef
 -stim_file 3 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[18]' -stim_base 3 -stim_label 3 TransX \
 -stim_file 4 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[19]' -stim_base 4 -stim_label 4 TransY \
 -stim_file 5 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[20]' -stim_base 5 -stim_label 5 TransZ \
 -stim_file 6 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[21]' -stim_base 6 -stim_label 6 RotX \
 -stim_file 7 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[22]' -stim_base 7 -stim_label 7 RotY \
 -stim_file 8 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[23]' -stim_base 8 -stim_label 8 RotZ \
+<<<<<<< HEAD
 -stim_file 9 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_meants_CSF.tsv''[0]' -stim_base 9 -stim_label 9 csf \
+=======
+-stim_file 9 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_mean_timeseriesCSF.tsv''[0]' -stim_base 9 -stim_label 9 csf \
+>>>>>>> aea18fe3e736a3715c305f11d340cd29819816ef
 -stim_file 10 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[0]' -stim_base 10 -stim_label 10 wm \
 -x1D '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap.xmat.1D' \
 -xjpeg '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap.jpg' \
