@@ -1,7 +1,6 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
 path_der="derivatives/"
-#path_output="spreading_dynamics_clinical/derivatives/"
 numjobs=1
 
 
@@ -137,6 +136,8 @@ function mean_ts {  #make sure its MNI!!!!!!
 	echo "Processing input: $input with mask: $mask"
 	
 	fslmeants -i "$input" -o "$output" -m "$mask"
+
+	# add "csf" header, cause it skips first row assuming it's header
 	echo -e "csf\n$(cat "$output")" > "$output"
 }
 
@@ -169,18 +170,18 @@ function deconvolve {
 	-num_stimts 10 \
 	-stim_times 1 "$events_low" 'GAM' -stim_label 1 low_WM \
 	-stim_times 2 "$events_high" 'GAM' -stim_label 2 high_WM \
-  	-stim_file 3 "$regressor_tsv"'[62]' -stim_base 3 -stim_label 3 TransX \
-  	-stim_file 4 "$regressor_tsv"'[66]' -stim_base 4 -stim_label 4 TransY \
-  	-stim_file 5 "$regressor_tsv"'[70]' -stim_base 5 -stim_label 5 TransZ \
-  	-stim_file 6 "$regressor_tsv"'[74]' -stim_base 6 -stim_label 6 RotX \
-  	-stim_file 7 "$regressor_tsv"'[78]' -stim_base 7 -stim_label 7 RotY \
-  	-stim_file 8 "$regressor_tsv"'[82]' -stim_base 8 -stim_label 8 Rotz \
+  	-stim_file 3 "$regressor_tsv"'[18]' -stim_base 3 -stim_label 3 TransX \
+  	-stim_file 4 "$regressor_tsv"'[19]' -stim_base 4 -stim_label 4 TransY \
+  	-stim_file 5 "$regressor_tsv"'[20]' -stim_base 5 -stim_label 5 TransZ \
+  	-stim_file 6 "$regressor_tsv"'[21]' -stim_base 6 -stim_label 6 RotX \
+  	-stim_file 7 "$regressor_tsv"'[22]' -stim_base 7 -stim_label 7 RotY \
+  	-stim_file 8 "$regressor_tsv"'[23]' -stim_base 8 -stim_label 8 Rotz \
   	-stim_file 9 "$regressorCSF_tsv"'[0]' -stim_base 9 -stim_label 9 csf \
-  	-stim_file 10 "$regressor_tsv"'[4]' -stim_base 10 -stim_label 10 wm \
+  	-stim_file 10 "$regressor_tsv"'[0]' -stim_base 10 -stim_label 10 wm \
 	-fout \
 	-tout \
-  	-x1D "$output_xmat".xmat.1D \
-  	-xjpeg "$output_jpg".jpg \
+  	-x1D "$output_xmat" \
+  	-xjpeg "$output_jpg" \
   	-jobs 1 \
   	-virtvec
 }
@@ -191,6 +192,35 @@ function deconvolve {
 export -f deconvolve
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" deconvolve {} "$mask" "$events_low" "$events_high" "$regressor_tsv" "$regressorCSF_tsv"
+rm "$path_der/input_files.txt"
+
+
+function fitting {
+	input="$1"
+	matrix="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.xmat.1D"
+	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
+	fit_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_fit.nii.gz"
+	res_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_REML_whitened_residuals.nii.gz"
+
+	3dREMLfit \
+	-input "$input" \
+	-matrix "$matrix" \
+	-mask "$mask" \
+	-Rbuck "$fit_output" \
+	-fout \
+	-tout \
+	-Rwherr "$res_output" \
+	-verb 
+	#-Rerrts sub-376_ses-postop_task-es_run-03_REML_residuals.nii.gz \
+	#-Rwherr sub-376_ses-postop_task-es_run-03_REML_whitened_residuals.nii.gz \
+	#-Oerrts sub-376_ses-postop_task-es_run-03_OLSQ_residuals.nii.gz \
+	#-verb
+
+}
+
+export -f fitting
+find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
+cat "$path_der/input_files.txt" | parallel -j "$numjobs" fitting {} "$mask" "$matrix"
 rm "$path_der/input_files.txt"
 
 
