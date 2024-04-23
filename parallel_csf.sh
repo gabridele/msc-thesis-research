@@ -19,7 +19,7 @@ for subj in `cat "subjList.txt"`; do
 	derivatives_dir="derivatives/$subj/func"
 	cd "$subj/func"
 
-	echo "Processing subject: $subj...\n"
+	echo -e "Processing subject: $subj...\n"
 	
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
@@ -41,8 +41,8 @@ function smooth {
     mask="${input%_preproc.nii.gz}_brainmask.nii.gz" 
     output="${input%_preproc.nii.gz}_preproc_smoothed.nii.gz"
     
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
 
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
@@ -66,7 +66,7 @@ function binarize_img {
     input="$1"
     output="${input%probtissue.nii.gz}bin.nii.gz"
     
-	echo "Processing input: $input \n..."
+	echo -e "Processing input: $input \n..."
 
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
@@ -93,8 +93,8 @@ function resample_epi {
     mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
 
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
@@ -119,8 +119,8 @@ function resample_scap_mask {
     mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
     
 	if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
@@ -145,13 +145,17 @@ function mean_ts {  #make sure its MNI!!!!!!
 	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
 	output="${input%_bold*}_meants_CSF.tsv" 
 	
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
 	
-	fslmeants -i "$input" -o "$output" -m "$mask"
+	if [ -f "$output" ]; then
+        echo "Output file $output already exists, skipping..."
+    else
+		fslmeants -i "$input" -o "$output" -m "$mask"
+		echo -e "csf\n$(cat "$output")" > "$output"
+		# add "csf" header, cause it skips first row assuming it's header
+	fi
 
-	# add "csf" header, cause it skips first row assuming it's header
-	echo -e "csf\n$(cat "$output")" > "$output"
 }
 
 export -f mean_ts
@@ -173,8 +177,8 @@ function deconvolve {
 	output_xmat="${input%_bold*}.xmat.1D"
 	output_jpg="${input%_bold*}.jpg"
 	
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
 	
 	3dDeconvolve \
 	-force_TR 2 \
@@ -218,8 +222,8 @@ function fitting {
 	fit_output="${input%_bold*}_fit.nii.gz"
 	res_output="${input%_bold*}_REML_whitened_residuals.nii.gz"
 
-	echo "Processing input: $input \n..."
-	echo "With mask: $mask... \n"
+	echo -e "Processing input: $input \n..."
+	echo -e "With mask: $mask... \n"
 
 	3dREMLfit \
 	-input "$input" \
