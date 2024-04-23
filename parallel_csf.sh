@@ -131,7 +131,7 @@ function mean_ts {  #make sure its MNI!!!!!!
 	input="$1" 
 	anat="${input//\/func\//\/anat\/}"
 	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
-	output="${input%_bold_space*}_meants_CSF.tsv" 
+	output="${input%_bold*}_meants_CSF.tsv" 
 	
 	echo "Processing input: $input with mask: $mask"
 	
@@ -153,12 +153,12 @@ echo ".................Performing deconvolution..................."
 function deconvolve {
 	input="$1"
 	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
-	events_low="${input%_bold_space-MNI*}_low_WM.txt"
-	events_high="${input%_bold_space-MNI*}_high_WM.txt"
+	events_low="${input%_bold*}_low_WM.txt"
+	events_high="${input%_bold*}_high_WM.txt"
 	regressor_tsv="${input%_space*}_confounds.tsv"
-	regressorCSF_tsv="${input%_bold_space*}_meants_CSF.tsv"
-	output_xmat="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.xmat.1D"
-	output_jpg="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.jpg"
+	regressorCSF_tsv="${input%_bold*}_meants_CSF.tsv"
+	output_xmat="${input%_bold*}.xmat.1D"
+	output_jpg="${input%_bold*}.jpg"
 	
 	echo "Processing input: $input..."
 	
@@ -199,10 +199,10 @@ echo ".................Performing fitting..................."
 
 function fitting {
 	input="$1"
-	matrix="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.xmat.1D"
+	matrix="${input%_bold*}.xmat.1D"
 	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
-	fit_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_fit.nii.gz"
-	res_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_REML_whitened_residuals.nii.gz"
+	fit_output="${input%_bold*}_fit.nii.gz"
+	res_output="${input%_bold*}_REML_whitened_residuals.nii.gz"
 
 	echo "Processing input: $input... with $mask ..."
 	3dREMLfit \
