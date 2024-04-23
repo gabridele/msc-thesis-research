@@ -159,8 +159,8 @@ function deconvolve {
 	
 	3dDeconvolve \
 	-force_TR 2 \
-	-mask "$mask" \ #mask di quel task
-	-input "$input" \ #bold smoothed resampled
+	-mask "$mask" \
+	-input "$input" 
 	-polort 'A' \
 	-num_stimts 10 \
 	-stim_times 1 "$events_low" 'GAM' -stim_label 1 low_WM \
@@ -177,10 +177,12 @@ function deconvolve {
 	-tout \
   	-x1D "$output_xmat".xmat.1D \
   	-xjpeg "$output_jpg".jpg \
-	#-x1D_stop \ docs say its useful only for testing
   	-jobs 1 \
   	-virtvec
 }
+#mask di quel task
+#bold smoothed resampled
+#-x1D_stop \ docs say its useful only for testing
 
 export -f deconvolve
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
