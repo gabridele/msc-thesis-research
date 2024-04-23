@@ -99,7 +99,7 @@ cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_epi {} "$mask"
 rm "$path_der/input_files.txt"
 
 # 3.1 resample mask of scap task
-function resample { 
+function resample_scap_mask { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
     mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_resampled.nii.gz"
@@ -113,9 +113,9 @@ function resample {
     fi
 }
 
-export -f resample
+export -f resample_scap_mask
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI152*_brainmask.nii.gz' > "$path_der/input_files.txt"
-cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample {} "$mask"
+cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_scap_mask {} "$mask"
 rm "$path_der/input_files.txt"
 
 #4
@@ -137,7 +137,7 @@ rm "$path_der/input_files.txt"
 #5
 function deconvolve {
 	input="$1"
-	mask="${input%_preproc_*}_brainmask.nii.gz"
+	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
 	events_low="${input%_bold_space-MNI*}_low_WM.txt"
 	events_high="${input%_bold_space-MNI*}_high_WM.txt"
 	regressor_tsv="${input%_space*}_confounds.tsv"
