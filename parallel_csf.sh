@@ -126,29 +126,12 @@ rm "$path_der/input_files.txt"
 
 echo "###################################################################" 
 echo ".................Computing mean ts for CSF..................."
-function mean_ts {
-    input="$1"
-    anat="${input//\/func\//\/anat\/}"
-    mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_probtissue_bin_resampled.nii.gz"
-    output="${input%_bold_space*}_mean_timeseriesCSF.tsv"
-    temp_output="$output.temp"
 
-    # Add "csf" as the first line in a temporary file
-    echo "csf" > "$temp_output"
-
-    echo "Processing input: $input with mask: $mask"
-
-    # Use fslmeants to process the input and append the output to the temporary file
-    fslmeants -i "$input" -o -m "$mask" >> "$temp_output"
-
-    # Rename the temporary file to the final output file
-    mv "$temp_output" "$output"
-}
 #4
 function mean_ts {  #make sure its MNI!!!!!!
 	input="$1" 
 	anat="${input//\/func\//\/anat\/}"
-	mask="${anat%_task-scap*}_T1w_space-MNI*_class-CSF_bin.nii.gz"
+	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
 	output="${input%_bold_space*}_meants_CSF.tsv" 
 	
 	echo "Processing input: $input with mask: $mask"
