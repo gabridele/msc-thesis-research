@@ -1,7 +1,7 @@
 #!/bin/bash
-##!!! directort must be that of dataset ~/spreading_dynamics_clinical
-path_der="spreading_dynamics_clinical/derivatives/"
-path_output="spreading_dynamics_clinical/derivatives/"
+##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
+path_der="copyy/derivatives/"
+#path_output="spreading_dynamics_clinical/derivatives/"
 numjobs=1
 
 #--------
@@ -174,40 +174,3 @@ export -f deconvolve
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" deconvolve {} "$mask" "$events_low" "$events_high" "$regressor_tsv" "$regressorCSF_tsv"
 rm "$path_der/input_files.txt"
-
-
--miniconda
--fsl
--numpy
--scipy
--pandas
--afni
--ANTs
-env neuroimg
--nibabel 
--nilearn
--mrtrix
--dipy
-
-3dDeconvolve \
--force_TR 2 \
--mask '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz' \
--input '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed_resampled2.nii.gz' \
--polort 'A' \
--local_times \
--num_stimts 10 \
--stim_times 1 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/low_WM.txt' 'GAM' -stim_label 1 low_WM \
--stim_times 2 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/high_WM.txt' 'GAM' -stim_label 2 high_WM \
--stim_file 3 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[18]' -stim_base 3 -stim_label 3 TransX \
--stim_file 4 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[19]' -stim_base 4 -stim_label 4 TransY \
--stim_file 5 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[20]' -stim_base 5 -stim_label 5 TransZ \
--stim_file 6 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[21]' -stim_base 6 -stim_label 6 RotX \
--stim_file 7 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[22]' -stim_base 7 -stim_label 7 RotY \
--stim_file 8 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[23]' -stim_base 8 -stim_label 8 RotZ \
--stim_file 9 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_meants_CSF.tsv''[0]' -stim_base 9 -stim_label 9 csf \
--stim_file 10 '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap_bold_confounds.tsv''[0]' -stim_base 10 -stim_label 10 wm \
--x1D '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap.xmat.1D' \
--xjpeg '/home/gabridele/Desktop/spreading_dynamics_clinical/derivatives/sub-10159/func/sub-10159_task-scap.jpg' \
--x1D_stop \
--jobs 1 \
--virtvec
