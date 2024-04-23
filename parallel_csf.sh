@@ -16,7 +16,6 @@ echo "###################################################################"
 echo ".....................Making timings....................."
 
 #0 make timings
-# Loop over all subjects and format timing files into FSL format
 for subj in `cat "subjList.txt"`; do
 	derivatives_dir="derivatives/$subj/func"
 	cd "$subj/func"
@@ -25,7 +24,7 @@ for subj in `cat "subjList.txt"`; do
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
 
-	# Now convert to AFNI format
+	# Convert to AFNI format
 	echo "Converting to AFNI format..."
 	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
 	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
