@@ -1,18 +1,19 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
-path_der="copyy/derivatives/"
+path_der="derivatives/"
 #path_output="spreading_dynamics_clinical/derivatives/"
 numjobs=1
 
-#--------
-#find "$path_raw" -type f -name '*circle*' > "$path_raw/input_rm.txt"
-#cat "$path_raw/input_rm.txt" | parallel -j "$numjobs" rm {}
-#------
 
+echo "###################################################################" 
+echo ".....................Creating list of subjects....................."
 #create list of subjects
 if [ ! -f "subjList.txt" ]; then
     find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subjList.txt"
 fi
+
+echo "###################################################################" 
+echo ".....................Making timings....................."
 
 #0 make timings
 # Loop over all subjects and format timing files into FSL format
@@ -31,6 +32,9 @@ for subj in `cat "subjList.txt"`; do
 
 	cd ../..
 done
+
+echo "###################################################################" 
+echo ".....................Smoothing EPI....................."
 
 #1
 function smooth { 
@@ -52,15 +56,13 @@ find "$path_der" -type f -name '*task-scap_bold_space-MNI152*_preproc.nii.gz' > 
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" smooth {} "$mask"
 rm "$path_der/input_files.txt"
 
-# optional removing files
-#find "$path_der" -type f -name '*+orig.BRIK' > "$path_der/input_files.txt"
-#cat "$path_der/input_files.txt" | parallel -j "$numjobs" rm {}
-#----
+echo "###################################################################" 
+echo ".....................Binarizing CSF image....................."
 
 #2
 function binarize_img { 
     input="$1"
-    output="${input%nii.gz}_bin.nii.gz"
+    output="${input%probtissue.nii.gz}bin.nii.gz"
     
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
@@ -77,12 +79,14 @@ cat "$path_der/input_files.txt" | parallel -j "$numjobs" binarize_img {}
 rm "$path_der/input_files.txt"
 
 #---------------------
+echo "###################################################################"
+echo ".................Resampling EPI with T1w brain mask..................."
 
 #3 make epi into same size as t1 brain mask
 function resample_epi { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
-    mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_resampled.nii.gz"
+    mask="${anat%_task-scap*}_T1w_space-MNI*_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
     if [ -f "$output" ]; then
@@ -98,11 +102,14 @@ find "$path_der" -type f -name '*_task-scap_bold_space-MNI152*_preproc_smoothed.
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_epi {} "$mask"
 rm "$path_der/input_files.txt"
 
+echo "###################################################################" 
+echo ".................Resampling mask of task with T1w brain mask..................."
+
 # 3.1 resample mask of scap task
 function resample_scap_mask { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
-    mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_resampled.nii.gz"
+    mask="${anat%_task-scap*}_T1w_space-MNI*_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
     if [ -f "$output" ]; then
@@ -114,15 +121,18 @@ function resample_scap_mask {
 }
 
 export -f resample_scap_mask
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI152*_brainmask.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_brainmask.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_scap_mask {} "$mask"
 rm "$path_der/input_files.txt"
+
+echo "###################################################################" 
+echo ".................Computing mean ts for CSF..................."
 
 #4
 function mean_ts {  #make sure its MNI!!!!!!
 	input="$1" 
 	anat="${input//\/func\//\/anat\/}"
-	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_probtissue_bin.nii.gz"
+	mask="${anat%_task-scap*}_T1w_space-MNI*_class-CSF_bin.nii.gz"
 	output="${input%_bold_space*}_meants_CSF.tsv" 
 	
 	echo "Processing input: $input with mask: $mask"
@@ -133,6 +143,9 @@ export -f mean_ts
 find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" mean_ts {} "$mask"
 rm "$path_der/input_files.txt"
+
+echo "###################################################################" 
+echo ".................Performing deconvolution..................."
 
 #5
 function deconvolve {
@@ -174,3 +187,14 @@ export -f deconvolve
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" deconvolve {} "$mask" "$events_low" "$events_high" "$regressor_tsv" "$regressorCSF_tsv"
 rm "$path_der/input_files.txt"
+
+
+#--------
+#find "$path_raw" -type f -name '*circle*' > "$path_raw/input_rm.txt"
+#cat "$path_raw/input_rm.txt" | parallel -j "$numjobs" rm {}
+#------
+# optional removing files
+#find "$path_der" -type f -name '*+orig.BRIK' > "$path_der/input_files.txt"
+#cat "$path_der/input_files.txt" | parallel -j "$numjobs" rm {}
+#----
+#--------
