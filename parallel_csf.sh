@@ -18,7 +18,8 @@ echo ".....................Making timings....................."
 for subj in `cat "subjList.txt"`; do
 	derivatives_dir="derivatives/$subj/func"
 	cd "$subj/func"
-	echo "Processing subject: $subj"
+
+	echo "Processing subject: $subj...\n"
 	
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
 	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
@@ -40,6 +41,9 @@ function smooth {
     mask="${input%_preproc.nii.gz}_brainmask.nii.gz" 
     output="${input%_preproc.nii.gz}_preproc_smoothed.nii.gz"
     
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
+
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
     else
@@ -50,7 +54,7 @@ function smooth {
 
 export -f smooth
 
-find "$path_der" -type f -name '*task-scap_bold_space-MNI152*_preproc.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*task-scap_bold_space-MNI152NLin2009cAsym_preproc.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" smooth {} "$mask"
 rm "$path_der/input_files.txt"
 
@@ -62,6 +66,8 @@ function binarize_img {
     input="$1"
     output="${input%probtissue.nii.gz}bin.nii.gz"
     
+	echo "Processing input: $input \n..."
+
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
     else
@@ -84,9 +90,12 @@ echo ".................Resampling EPI with T1w brain mask..................."
 function resample_epi { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
-    mask="${anat%_task-scap*}_T1w_space-MNI*_brainmask.nii.gz"
+    mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
+
     if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
     else
@@ -96,7 +105,7 @@ function resample_epi {
 }
 
 export -f resample_epi
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI152*_preproc_smoothed.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_epi {} "$mask"
 rm "$path_der/input_files.txt"
 
@@ -107,10 +116,13 @@ echo ".................Resampling mask of task with T1w brain mask..............
 function resample_scap_mask { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
-    mask="${anat%_task-scap*}_T1w_space-MNI*_brainmask.nii.gz"
+    mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
     output="${input%.nii.gz}_resampled.nii.gz" 
     
-    if [ -f "$output" ]; then
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
+    
+	if [ -f "$output" ]; then
         echo "Output file $output already exists, skipping..."
     else
         3dresample -master "$mask" -prefix "$output" -input "$input"
@@ -119,7 +131,7 @@ function resample_scap_mask {
 }
 
 export -f resample_scap_mask
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_brainmask.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_scap_mask {} "$mask"
 rm "$path_der/input_files.txt"
 
@@ -133,7 +145,8 @@ function mean_ts {  #make sure its MNI!!!!!!
 	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
 	output="${input%_bold*}_meants_CSF.tsv" 
 	
-	echo "Processing input: $input with mask: $mask"
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
 	
 	fslmeants -i "$input" -o "$output" -m "$mask"
 
@@ -160,7 +173,8 @@ function deconvolve {
 	output_xmat="${input%_bold*}.xmat.1D"
 	output_jpg="${input%_bold*}.jpg"
 	
-	echo "Processing input: $input..."
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
 	
 	3dDeconvolve \
 	-force_TR 2 \
@@ -190,7 +204,7 @@ function deconvolve {
 #-x1D_stop \ docs say its useful only for testing
 
 export -f deconvolve
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" deconvolve {} "$mask" "$events_low" "$events_high" "$regressor_tsv" "$regressorCSF_tsv"
 rm "$path_der/input_files.txt"
 
@@ -204,7 +218,9 @@ function fitting {
 	fit_output="${input%_bold*}_fit.nii.gz"
 	res_output="${input%_bold*}_REML_whitened_residuals.nii.gz"
 
-	echo "Processing input: $input... with $mask ..."
+	echo "Processing input: $input \n..."
+	echo "With mask: $mask... \n"
+
 	3dREMLfit \
 	-input "$input" \
 	-matrix "$matrix" \
@@ -222,7 +238,7 @@ function fitting {
 }
 
 export -f fitting
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" fitting {} "$mask" "$matrix"
 rm "$path_der/input_files.txt"
 
