@@ -194,6 +194,8 @@ find "$path_der" -type f -name '*_task-scap_bold_space-MNI*_preproc_smoothed_res
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" deconvolve {} "$mask" "$events_low" "$events_high" "$regressor_tsv" "$regressorCSF_tsv"
 rm "$path_der/input_files.txt"
 
+echo "###################################################################" 
+echo ".................Performing fitting..................."
 
 function fitting {
 	input="$1"
@@ -202,6 +204,7 @@ function fitting {
 	fit_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_fit.nii.gz"
 	res_output="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}_REML_whitened_residuals.nii.gz"
 
+	echo "Processing input: $input... with $mask ..."
 	3dREMLfit \
 	-input "$input" \
 	-matrix "$matrix" \
