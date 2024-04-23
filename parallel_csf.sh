@@ -137,7 +137,9 @@ function mean_ts {  #make sure its MNI!!!!!!
 	echo "Processing input: $input with mask: $mask"
 	
 	fslmeants -i "$input" -o "$output" -m "$mask"
+	echo -e "csf\n$(cat "$output")" > "$output"
 }
+
 export -f mean_ts
 find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" mean_ts {} "$mask"
@@ -157,10 +159,12 @@ function deconvolve {
 	output_xmat="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.xmat.1D"
 	output_jpg="${input%_bold_space-MNI*Asym_preproc_smoothed_resampled.nii.gz}.jpg"
 	
+	echo "Processing input: $input..."
+	
 	3dDeconvolve \
 	-force_TR 2 \
 	-mask "$mask" \
-	-input "$input" 
+	-input "$input" \
 	-polort 'A' \
 	-num_stimts 10 \
 	-stim_times 1 "$events_low" 'GAM' -stim_label 1 low_WM \
