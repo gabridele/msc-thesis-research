@@ -79,7 +79,7 @@ rm "$path_der/input_files.txt"
 #---------------------
 
 #3 make epi into same size as t1 brain mask
-function resample { 
+function resample_epi { 
     input="$1"
     anat="${input//\/func\//\/anat\/}"
     mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_resampled.nii.gz"
@@ -93,9 +93,9 @@ function resample {
     fi
 }
 
-export -f resample
+export -f resample_epi
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI152*_preproc_smoothed.nii.gz' > "$path_der/input_files.txt"
-cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample {} "$mask"
+cat "$path_der/input_files.txt" | parallel -j "$numjobs" resample_epi {} "$mask"
 rm "$path_der/input_files.txt"
 
 # 3.1 resample mask of scap task
