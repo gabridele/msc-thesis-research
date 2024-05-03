@@ -26,8 +26,8 @@ for subj in `cat "subject_id_with_exclusions.txt"`; do
 
 	# Convert to AFNI format
 	echo "Converting to AFNI format..."
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM.1D"
 
 	cd ../..
 done
@@ -248,8 +248,8 @@ rm "$path_der/input_files.txt"
 
 
 #--------
-#find "$path_raw" -type f -name '*circle*' > "$path_raw/input_rm.txt"
-#cat "$path_raw/input_rm.txt" | parallel -j "$numjobs" rm {}
+find "$path_der" -type f -name '*WM*' > "$./input_rm.txt"
+cat "./input_rm.txt" | parallel -j 2 rm {}
 #------
 # optional removing files
 #find "$path_der" -type f -name '*+orig.BRIK' > "$path_der/input_files.txt"
