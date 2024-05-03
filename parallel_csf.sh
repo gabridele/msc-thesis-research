@@ -4,12 +4,12 @@ path_der="derivatives/"
 numjobs=1
 
 
-echo "###################################################################" 
+#echo "###################################################################" 
 #echo ".....................Creating list of subjects....................."
 #create list of subjects
-if [ ! -f "subject_id_with_exclusions.txt" ]; then
-    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subject_id_with_exclusions.txt"
-fi
+#if [ ! -f "subject_id_with_exclusions.txt" ]; then
+#    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subject_id_with_exclusions.txt"
+#fi
 
 #echo "###################################################################" 
 #echo ".....................Making timings....................."
