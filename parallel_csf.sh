@@ -11,8 +11,8 @@ echo "###################################################################"
 #    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subjList.txt"
 #fi
 
-echo "###################################################################" 
-echo ".....................Making timings....................."
+#echo "###################################################################" 
+#echo ".....................Making timings....................."
 
 #0 make timings
 for subj in `cat "subject_id_with_exclusions.txt"`; do
@@ -186,8 +186,8 @@ function deconvolve {
 	-input "$input" \
 	-polort 'A' \
 	-num_stimts 10 \
-	-stim_times 1 "$events_low" 'GAM' -stim_label 1 low_WM \
-	-stim_times 2 "$events_high" 'GAM' -stim_label 2 high_WM \
+	-stim_times 1 "$events_low" 'BLOCK(5,1)' -stim_label 1 low_WM \
+	-stim_times 2 "$events_high" 'BLOCK(5,1)' -stim_label 2 high_WM \
   	-stim_file 3 "$regressor_tsv"'[18]' -stim_base 3 -stim_label 3 TransX \
   	-stim_file 4 "$regressor_tsv"'[19]' -stim_base 4 -stim_label 4 TransY \
   	-stim_file 5 "$regressor_tsv"'[20]' -stim_base 5 -stim_label 5 TransZ \
