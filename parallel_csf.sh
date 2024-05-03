@@ -7,9 +7,9 @@ numjobs=1
 echo "###################################################################" 
 #echo ".....................Creating list of subjects....................."
 #create list of subjects
-#if [ ! -f "subjList.txt" ]; then
-#    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subjList.txt"
-#fi
+if [ ! -f "subject_id_with_exclusions.txt" ]; then
+    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subject_id_with_exclusions.txt"
+fi
 
 #echo "###################################################################" 
 #echo ".....................Making timings....................."
@@ -248,8 +248,8 @@ rm "$path_der/input_files.txt"
 
 
 #--------
-find "$path_der" -type f -name '*WM*' > "$./input_rm.txt"
-cat "./input_rm.txt" | parallel -j 2 rm {}
+#find "$path_der" -type f -name '*WM*' > "$./input_rm.txt"
+#cat "./input_rm.txt" | parallel -j 2 rm {}
 #------
 # optional removing files
 #find "$path_der" -type f -name '*+orig.BRIK' > "$path_der/input_files.txt"
