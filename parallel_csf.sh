@@ -5,24 +5,24 @@ numjobs=1
 
 
 echo "###################################################################" 
-echo ".....................Creating list of subjects....................."
+#echo ".....................Creating list of subjects....................."
 #create list of subjects
-if [ ! -f "subjList.txt" ]; then
-    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subjList.txt"
-fi
+#if [ ! -f "subjList.txt" ]; then
+#    find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subjList.txt"
+#fi
 
 echo "###################################################################" 
 echo ".....................Making timings....................."
 
 #0 make timings
-for subj in `cat "subjList.txt"`; do
+for subj in `cat "subject_id_with_exclusions.txt"`; do
 	derivatives_dir="derivatives/$subj/func"
 	cd "$subj/func"
 
 	echo -e "Processing subject: $subj...\n"
 	
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1, $2, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1, $2, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
 
 	# Convert to AFNI format
 	echo "Converting to AFNI format..."
