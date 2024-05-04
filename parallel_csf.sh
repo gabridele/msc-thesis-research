@@ -1,7 +1,7 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
 path_der="derivatives/"
-numjobs=1
+numjobs=2
 
 
 #echo "###################################################################" 
@@ -21,8 +21,8 @@ for subj in `cat "subject_id_with_exclusions.txt"`; do
 
 	echo -e "Processing subject: $subj...\n"
 	
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1, $2, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1, $2, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1, 5.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1, 5.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
 
 	# Convert to AFNI format
 	echo "Converting to AFNI format..."
@@ -139,7 +139,7 @@ echo "###################################################################"
 echo ".................Computing mean ts for CSF..................."
 
 #4
-function mean_ts {  #make sure its MNI!!!!!!
+function mean_ts {
 	input="$1" 
 	anat="${input//\/func\//\/anat\/}"
 	mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
@@ -149,11 +149,11 @@ function mean_ts {  #make sure its MNI!!!!!!
 	echo -e "With mask: $mask... \n"
 	
 	if [ -f "$output" ]; then
-        echo "Output file $output already exists, skipping..."
-    else
+		echo "Output file $output already exists, skipping..."
+	else
 		fslmeants -i "$input" -o "$output" -m "$mask"
 		echo -e "csf\n$(cat "$output")" > "$output"
-		# add "csf" header, cause it skips first row assuming it's header
+		#add "csf" header, cause it skips first row assuming it's header
 	fi
 
 }
@@ -170,8 +170,8 @@ echo ".................Performing deconvolution..................."
 function deconvolve {
 	input="$1"
 	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
-	events_low="${input%_bold*}_low_WM.txt"
-	events_high="${input%_bold*}_high_WM.txt"
+	events_low="${input%_bold*}_low_WM.1D"
+	events_high="${input%_bold*}_high_WM.1D"
 	regressor_tsv="${input%_space*}_confounds.tsv"
 	regressorCSF_tsv="${input%_bold*}_meants_CSF.tsv"
 	output_xmat="${input%_bold*}.xmat.1D"
@@ -200,7 +200,7 @@ function deconvolve {
 	-tout \
   	-x1D "$output_xmat" \
   	-xjpeg "$output_jpg" \
-  	-jobs 1 \
+  	-jobs 2 \
   	-virtvec
 }
 #mask di quel task
@@ -233,11 +233,7 @@ function fitting {
 	-fout \
 	-tout \
 	-Rwherr "$res_output" \
-	-verb 
-	#-Rerrts sub-376_ses-postop_task-es_run-03_REML_residuals.nii.gz \
-	#-Rwherr sub-376_ses-postop_task-es_run-03_REML_whitened_residuals.nii.gz \
-	#-Oerrts sub-376_ses-postop_task-es_run-03_OLSQ_residuals.nii.gz \
-	#-verb
+	-verb
 
 }
 
@@ -248,8 +244,8 @@ rm "$path_der/input_files.txt"
 
 
 #--------
-#find "$path_der" -type f -name '*WM*' > "$./input_rm.txt"
-#cat "./input_rm.txt" | parallel -j 2 rm {}
+find "$path_der" -type f -name '*WM*' > "./input_rm.txt"
+cat "./input_rm.txt" | parallel -j 2 rm {}
 #------
 # optional removing files
 #find "$path_der" -type f -name '*+orig.BRIK' > "$path_der/input_files.txt"
