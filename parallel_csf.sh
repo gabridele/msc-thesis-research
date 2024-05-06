@@ -16,7 +16,7 @@ fi
 
 #0 make timings
 
-for subj in "$input"; do
+for subj in `cat "subject_id_with_exclusions.txt"`; do
 	derivatives_dir="derivatives/$subj/func"
 	cd "$subj/func"
 
