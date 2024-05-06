@@ -1,7 +1,7 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
 path_der="derivatives/"
-numjobs=1
+numjobs=2
 
 
 #echo "###################################################################" 
