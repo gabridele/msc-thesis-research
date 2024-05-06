@@ -21,17 +21,21 @@ for subj in `cat "subject_id_with_exclusions.txt"`; do
 
 	echo -e "Processing subject: $subj...\n"
 
-	3,6,9,12 = 4.5
-	2,5,8,11 = 3
-	1,4,7,10 = 1.5
-	
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 1 && $3 <= 6) {print $1, 5.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM.txt"
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 >= 7 && $3 <= 12) {print $1, 5.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 1 && $3 = 4) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_1500.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 2 && $3 = 5) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_3000.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 3 && $3 = 6) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_4500.txt"	
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 7 && $3 = 10) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_1500.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 8 && $3 = 11) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_3000.txt"
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 = 9 && $3 = 12) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_4500.txt"
 
 	# Convert to AFNI format
 	echo "Converting to AFNI format..."
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM.1D"
-	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM_1500.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM_1500.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM_3000.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM_3000.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_low_WM_4500.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_low_WM_4500.1D"	
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM_1500.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM_1500.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM_3000.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM_3000.1D"
+	timing_tool.py -fsl_timing_files "../../$derivatives_dir/${subj}_task-scap_high_WM_4500.txt" -write_timing "../../$derivatives_dir/${subj}_task-scap_high_WM_4500.1D"
 
 	cd ../..
 done
@@ -40,19 +44,24 @@ echo "###################################################################"
 echo ".....................Smoothing EPI....................."
 
 #1
-function smooth { 
+function smooth {
     input="$1"
+    sub_id=$(basename "$input" | cut -d'_' -f1)
     mask="${input%_preproc.nii.gz}_brainmask.nii.gz" 
     output="${input%_preproc.nii.gz}_preproc_smoothed.nii.gz"
-    
-	echo -e "Processing input: $input \n..."
-	echo -e "With mask: $mask... \n"
 
-    if [ -f "$output" ]; then
-        echo "Output file $output already exists, skipping..."
+    if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
+        echo -e "\n Processing input: $input ..."
+        echo -e "\n With mask: $mask..."
+
+        if [ -f "$output" ]; then
+            echo -e "\n Output file $output already exists, skipping..."
+        else
+            3dBlurInMask -input "$input" -mask "$mask" -FWHM 4 -prefix "$output"
+            echo -e "\n Smoothed $input and saved as $output"
+        fi
     else
-        3dBlurInMask -input "$input" -mask "$mask" -FWHM 4 -prefix "$output"
-        echo "Smoothed $input and saved as $output"
+        echo -e "\n Subject $sub_id is excluded. Skipping..."
     fi
 }
 
@@ -174,8 +183,12 @@ echo ".................Performing deconvolution..................."
 function deconvolve {
 	input="$1"
 	mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
-	events_low="${input%_bold*}_low_WM.1D"
-	events_high="${input%_bold*}_high_WM.1D"
+	events_low15="${input%_bold*}_low_WM_1500.1D"
+	events_low30="${input%_bold*}_low_WM_3000.1D"
+	events_low45="${input%_bold*}_low_WM_4500.1D"
+	events_high15="${input%_bold*}_high_WM_1500.1D"
+	events_high30="${input%_bold*}_high_WM_3000.1D"
+	events_high45="${input%_bold*}_high_WM_4500.1D"
 	regressor_tsv="${input%_space*}_confounds.tsv"
 	regressorCSF_tsv="${input%_bold*}_meants_CSF.tsv"
 	output_xmat="${input%_bold*}.xmat.1D"
@@ -190,12 +203,12 @@ function deconvolve {
 	-input "$input" \
 	-polort 'A' \
 	-num_stimts 14 \
-	-stim_times 1 "$events_low1" 'BLOCK(6.5,1)' -stim_label 1 low_WM_1500 \
-	-stim_times 2 "$events_low2" 'BLOCK(8,1)' -stim_label 2 low_WM_3000 \
-	-stim_times 3 "$events_low3" 'BLOCK(9.5,1)' -stim_label 3 low_WM_4500 \
-	-stim_times 4 "$events_high1" 'BLOCK(6.5,1)' -stim_label 4 high_WM_1500 \
-	-stim_times 5 "$events_high2" 'BLOCK(8,1)' -stim_label 5 high_WM_3000 \
-	-stim_times 6 "$events_high3" 'BLOCK(9.5,1)' -stim_label 6 high_WM_4500 \
+	-stim_times 1 "$events_low15" 'BLOCK(6.5,1)' -stim_label 1 low_WM_1500 \
+	-stim_times 2 "$events_low30" 'BLOCK(8,1)' -stim_label 2 low_WM_3000 \
+	-stim_times 3 "$events_low45" 'BLOCK(9.5,1)' -stim_label 3 low_WM_4500 \
+	-stim_times 4 "$events_high15" 'BLOCK(6.5,1)' -stim_label 4 high_WM_1500 \
+	-stim_times 5 "$events_high30" 'BLOCK(8,1)' -stim_label 5 high_WM_3000 \
+	-stim_times 6 "$events_high45" 'BLOCK(9.5,1)' -stim_label 6 high_WM_4500 \
   	-stim_file 7 "$regressor_tsv"'[18]' -stim_base 7 -stim_label 7 TransX \
   	-stim_file 8 "$regressor_tsv"'[19]' -stim_base 8 -stim_label 8 TransY \
   	-stim_file 9 "$regressor_tsv"'[20]' -stim_base 9 -stim_label 9 TransZ \
