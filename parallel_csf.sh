@@ -22,12 +22,12 @@ for subj in `cat "subject_id_with_exclusions.txt"`; do
 
 	echo -e "Processing subject: $subj...\n"
 
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 1 && $3 == 4) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_1500.txt" &
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 2 && $3 == 5) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_3000.txt" &
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 3 && $3 == 6) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_4500.txt" &
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 7 && $3 == 10) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_1500.txt" &
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 8 && $3 == 11) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_3000.txt" &
-	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 9 && $3 == 12) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_4500.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 1 || $3 == 4) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_1500.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 2 || $3 == 5) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_3000.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 3 || $3 == 6) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_low_WM_4500.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 7 || $3 == 10) {print $1, 6.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_1500.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 8 || $3 == 11) {print $1, 8.0, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_3000.txt" &
+	cat ${subj}_task-scap_events.tsv | awk '{if ($3 == 9 || $3 == 12) {print $1, 9.5, 1}}' > "../../$derivatives_dir/${subj}_task-scap_high_WM_4500.txt" &
 
 	# Convert to AFNI format
 	echo "Converting to AFNI format..."
