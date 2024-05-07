@@ -11,8 +11,8 @@ if [ ! -f "subject_id_with_exclusions.txt" ]; then
     find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subject_id_with_exclusions.txt"
 fi
 
-#echo "###################################################################" 
-#echo ".....................Making timings....................."
+echo "###################################################################" 
+echo ".....................Making timings....................."
 
 #0 make timings
 
@@ -40,6 +40,44 @@ for subj in `cat "subject_id_with_exclusions.txt"`; do
 
 	cd ../..
 done
+
+echo "###################################################################" 
+echo ".....................Processing motion regressors....................."
+
+#0.1
+
+function process_regr {
+ input="$1"
+ start_index=18
+ end_index=23
+ output="${input%.tsv}_processed.tsv"
+
+ for ((index=start_index; index<=end_index; index++)); do
+  # Extract the current column to a temporary file
+  cut -f "$index" "$input_tsv" > temp_column_${index}.1D
+
+  # Compute squared numbers and derivatives using 1deval
+  1deval -a temp_column_${index}.1D -expr 'a^2' > "squared_column_${index}.1D"
+  1deval -a temp_column_${index}.1D -expr "(a-`1dcat temp_column.1D | sed -n 2p`)/2" > "derivative_column_${index}.1D"
+  1deval -a "derivative_column_${index}.1D" -expr 'a^2' > "squared_derivative_column_${index}.1D"
+
+  # Clean up temporary column file
+  rm temp_column_${index}.1D
+ done
+
+ # Paste the new columns into the output TSV file
+ paste <(cut -f 1-$((start_index-1)) "$input_tsv") \
+  $(for ((index=start_index; index<=end_index; index++)); do echo -n "squared_column_${index}.1D derivative_column_${index}.1D squared_derivative_column_${index}.1D "; done) \
+  <(cut -f $((end_index+1))- "$input_tsv") > "$output_tsv"
+
+  # Clean up squared, derivative, and squared derivative columns
+  rm squared_column_*.1D derivative_column_*.1D squared_derivative_column_*.1D
+}
+
+
+find "$path_der" -type f -name '*_task-scap_bold_confounds.tsv' > "$path_der/input_files.txt"
+cat "$path_der/input_files.txt" | parallel -j "$numjobs" process_regr {}
+rm "$path_der/input_files.txt"
 
 echo "###################################################################" 
 echo ".....................Smoothing EPI....................."
@@ -242,14 +280,38 @@ function deconvolve {
     -stim_times 4 "$events_high15" 'BLOCK(6.5,1)' -stim_label 4 high_WM_1500 \
     -stim_times 5 "$events_high30" 'BLOCK(8,1)' -stim_label 5 high_WM_3000 \
     -stim_times 6 "$events_high45" 'BLOCK(9.5,1)' -stim_label 6 high_WM_4500 \
+    
     -stim_file 7 "$regressor_tsv"'[18]' -stim_base 7 -stim_label 7 TransX \
     -stim_file 8 "$regressor_tsv"'[19]' -stim_base 8 -stim_label 8 TransY \
     -stim_file 9 "$regressor_tsv"'[20]' -stim_base 9 -stim_label 9 TransZ \
     -stim_file 10 "$regressor_tsv"'[21]' -stim_base 10 -stim_label 10 RotX \
     -stim_file 11 "$regressor_tsv"'[22]' -stim_base 11 -stim_label 11 RotY \
-    -stim_file 12 "$regressor_tsv"'[23]' -stim_base 12 -stim_label 12 Rotz \
-    -stim_file 13 "$regressorCSF_tsv"'[0]' -stim_base 13 -stim_label 13 csf \
-    -stim_file 14 "$regressor_tsv"'[0]' -stim_base 14 -stim_label 14 wm \
+    -stim_file 12 "$regressor_tsv"'[23]' -stim_base 12 -stim_label 12 Rotz \ 
+    
+    -stim_file 13 "$regressor_tsv"'[24]' -stim_base 13 -stim_label 13 TransXd \
+    -stim_file 14 "$regressor_tsv"'[25]' -stim_base 14 -stim_label 14 TransYd \
+    -stim_file 15 "$regressor_tsv"'[26]' -stim_base 15 -stim_label 15 TransZd \
+    -stim_file 16 "$regressor_tsv"'[27]' -stim_base 16 -stim_label 16 RotXd \
+    -stim_file 17 "$regressor_tsv"'[28]' -stim_base 17 -stim_label 17 RotYd \
+    -stim_file 18 "$regressor_tsv"'[29]' -stim_base 18 -stim_label 18 Rotzd \
+
+    -stim_file 19 "$regressor_tsv"'[30]' -stim_base 19 -stim_label 19 TransX2 \
+    -stim_file 20 "$regressor_tsv"'[31]' -stim_base 20 -stim_label 20 TransY2 \
+    -stim_file 21 "$regressor_tsv"'[32]' -stim_base 21 -stim_label 21 TransZ2 \
+    -stim_file 22 "$regressor_tsv"'[33]' -stim_base 22 -stim_label 22 RotX2 \
+    -stim_file 23 "$regressor_tsv"'[34]' -stim_base 23 -stim_label 23 RotY2 \
+    -stim_file 24 "$regressor_tsv"'[35]' -stim_base 24 -stim_label 24 Rotz2 \
+
+    -stim_file 25 "$regressor_tsv"'[36]' -stim_base 25 -stim_label 25 TransXd2 \
+    -stim_file 26 "$regressor_tsv"'[37]' -stim_base 26 -stim_label 26 TransYd2 \
+    -stim_file 27 "$regressor_tsv"'[38]' -stim_base 27 -stim_label 27 TransZd2 \
+    -stim_file 28 "$regressor_tsv"'[39]' -stim_base 28 -stim_label 28 RotXd2 \
+    -stim_file 29 "$regressor_tsv"'[40]' -stim_base 29 -stim_label 29 RotYd2 \
+    -stim_file 30 "$regressor_tsv"'[41]' -stim_base 30 -stim_label 30 Rotzd2 \
+
+
+    -stim_file 31 "$regressorCSF_tsv"'[0]' -stim_base 31 -stim_label 31 csf \
+    -stim_file 32 "$regressor_tsv"'[0]' -stim_base 32 -stim_label 32 wm \
     -fout \
     -tout \
     -x1D "$output_xmat" \
@@ -321,3 +383,21 @@ rm "$path_der/input_files.txt"
 #cat "$path_der/input_files.txt" | parallel -j "$numjobs" rm {}
 #----
 #--------
+
+1d_tool.py \
+-infile ${}/${}_eight_regressors.txt \
+-derivative \
+-write ${}/${}_eight_regressors_derivatives.txt
+
+1dcat \ 
+${}/${}_eight_regressors.txt \
+${}/${}_eight_regressors_derivatives.txt \
+&> ${}/${}_eight_regressors_plus_derivatives.txt
+
+
+-stim_file 7 "$regressor_tsv"'[18]' -stim_base 7 -stim_label 7 TransX \
+    -stim_file 8 "$regressor_tsv"'[19]' -stim_base 8 -stim_label 8 TransY \
+    -stim_file 9 "$regressor_tsv"'[20]' -stim_base 9 -stim_label 9 TransZ \
+    -stim_file 10 "$regressor_tsv"'[21]' -stim_base 10 -stim_label 10 RotX \
+    -stim_file 11 "$regressor_tsv"'[22]' -stim_base 11 -stim_label 11 RotY \
+    -stim_file 12 "$regressor_tsv"'[23]' -stim_base 12 -stim_label 12 Rotz \ 
