@@ -45,35 +45,37 @@ echo "###################################################################"
 echo ".....................Processing motion regressors....................."
 
 #0.1
-
+path_der="derivatives/"
+numjobs=2
 function process_regr {
  input="$1"
- start_index=18
- end_index=23
  output="${input%.tsv}_processed.tsv"
+ # Loop through the specified columns
+ for index in {19..24}; do
+  echo "Processing column $index"
 
- for ((index=start_index; index<=end_index; index++)); do
   # Extract the current column to a temporary file
-  cut -f "$index" "$input_tsv" > temp_column_${index}.1D
+  tail -n +1 "$input" | cut -f "$index" "$input" > "temp_column_${index}.tsv"
 
-  # Compute squared numbers and derivatives using 1deval
-  1deval -a temp_column_${index}.1D -expr 'a^2' > "squared_column_${index}.1D"
-  1deval -a temp_column_${index}.1D -expr "(a-`1dcat temp_column.1D | sed -n 2p`)/2" > "derivative_column_${index}.1D"
-  1deval -a "derivative_column_${index}.1D" -expr 'a^2' > "squared_derivative_column_${index}.1D"
+  # Compute squared numbers using 1deval
+  1deval -a "temp_column_${index}.tsv" -expr 'a^2' -ok_1D_text > "squared_column_${index}.tsv"
 
-  # Clean up temporary column file
-  rm temp_column_${index}.1D
+  # Calculate derivatives using 1d_tool.py
+  1d_tool.py -infile "temp_column_${index}.tsv" -derivative -write "derivative_column_${index}.tsv"
+
+  # Compute squared derivatives using 1deval
+  1deval -a "derivative_column_${index}.tsv" -expr 'a^2' -ok_1D_text > "squared_derivative_column_${index}.tsv"
  done
 
  # Paste the new columns into the output TSV file
- paste <(cut -f 1-$((start_index-1)) "$input_tsv") \
-  $(for ((index=start_index; index<=end_index; index++)); do echo -n "squared_column_${index}.1D derivative_column_${index}.1D squared_derivative_column_${index}.1D "; done) \
-  <(cut -f $((end_index+1))- "$input_tsv") > "$output_tsv"
+ paste <(cut -f 1-$((start_index-1)) "$input") $(for index in {19..24}; do echo -n "squared_column_${index}.tsv derivative_column_${index}.tsv squared_derivative_column_${index}.tsv "; done) <(cut -f $((end_index+1))- "$input") > "$output"
 
-  # Clean up squared, derivative, and squared derivative columns
-  rm squared_column_*.1D derivative_column_*.1D squared_derivative_column_*.1D
+ # Clean up temporary files
+ rm temp_column_*.tsv squared_column_*.tsv derivative_column_*.tsv squared_derivative_column_*.tsv
+
 }
 
+export -f process_regr
 
 find "$path_der" -type f -name '*_task-scap_bold_confounds.tsv' > "$path_der/input_files.txt"
 cat "$path_der/input_files.txt" | parallel -j "$numjobs" process_regr {}
@@ -273,7 +275,7 @@ function deconvolve {
     -mask "$mask" \
     -input "$input" \
     -polort 'A' \
-    -num_stimts 14 \
+    -num_stimts 32 \
     -stim_times 1 "$events_low15" 'BLOCK(6.5,1)' -stim_label 1 low_WM_1500 \
     -stim_times 2 "$events_low30" 'BLOCK(8,1)' -stim_label 2 low_WM_3000 \
     -stim_times 3 "$events_low45" 'BLOCK(9.5,1)' -stim_label 3 low_WM_4500 \
