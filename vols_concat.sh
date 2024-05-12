@@ -7,11 +7,11 @@ function vols_concat {
  output="./concat_vols.tsv"
 
  echo -e "$sub_id\n$(cat "$input")" > "${input}.with_header"
- # If output file doesn't exist, create it with the header and content
+ # if output file doesn't exist, create it with header and content
  if [ ! -f "$output" ]; then
    mv "${input}.with_header" "$output"
  else
-   # Otherwise, append content of input file as new column
+   # else append content of input file as new column
    paste "$output" "${input}.with_header" > "${output}.tmp" && mv "${output}.tmp" "$output"
  fi
  rm "${input}.with_header"
