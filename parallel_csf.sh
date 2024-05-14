@@ -1,15 +1,15 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
 path_der="derivatives/"
-numjobs=10
+numjobs=1
 
 
-#echo "###################################################################" 
-#echo ".....................Creating list of subjects....................."
+echo "###################################################################" 
+echo ".....................Creating list of subjects....................."
 #create list of subjects
-#if [ ! -f "subject_id_with_exclusions.txt" ]; then
+if [ ! -f "subject_id_with_exclusions.txt" ]; then
     find . -maxdepth 1 -type d -name 'sub-*' | sed 's/.*\///' | sort > "subject_id_with_exclusions.txt"
-#fi
+fi
 
 #0 make timings
 
