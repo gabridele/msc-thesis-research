@@ -49,29 +49,33 @@ path_der="derivatives/"
 numjobs=2
 function process_regr {
  input="$1"
- output="${input%.tsv}_processed.tsv"
+ #output="${input%.tsv}_processed.tsv"
  # Loop through the specified columns
  for index in {19..24}; do
   echo "Processing column $index"
 
   # Extract the current column to a temporary file
-  tail -n +1 "$input" | cut -f "$index" "$input" > "temp_column_${index}.tsv"
-
+  #tail -n +2 "$input" > "tailed_${index}.tsv" 
+  
+  cut -f "$index" "$input" > "temp_column_${index}.tsv"
+  tail -n +2 "temp_column_${index}.tsv" > "tailed_temp_column_${index}.tsv"
+  
   # Compute squared numbers using 1deval
-  1deval -a "temp_column_${index}.tsv" -expr 'a^2' -ok_1D_text > "squared_column_${index}.tsv"
-
+  1deval -expr 'a*a' -a "temp_column_${index}.tsv" > "squared_column_${index}.tsv"
+  
   # Calculate derivatives using 1d_tool.py
-  1d_tool.py -infile "temp_column_${index}.tsv" -derivative -write "derivative_column_${index}.tsv"
-
+  1d_tool.py -infile "tailed_temp_column_${index}.tsv" -derivative -write "derivative_column_${index}.tsv"
+  echo -e ""$(head -1 "$index" $input)"\n$(cat "derivative_column_${index}.tsv")" > "derivative_column_${index}.tsv"
+  
   # Compute squared derivatives using 1deval
-  1deval -a "derivative_column_${index}.tsv" -expr 'a^2' -ok_1D_text > "squared_derivative_column_${index}.tsv"
+  1deval -expr 'a*a' -a "derivative_column_${index}.tsv" > "squared_derivative_column_${index}.tsv"
  done
 
  # Paste the new columns into the output TSV file
- paste <(cut -f 1-$((start_index-1)) "$input") $(for index in {19..24}; do echo -n "squared_column_${index}.tsv derivative_column_${index}.tsv squared_derivative_column_${index}.tsv "; done) <(cut -f $((end_index+1))- "$input") > "$output"
+ #paste <(cut -f 1-$((start_index-1)) "$input") $(for index in {19..24}; do echo -n "squared_column_${index}.tsv derivative_column_${index}.tsv squared_derivative_column_${index}.tsv "; done) <(cut -f $((end_index+1))- "$input") > "$output"
 
  # Clean up temporary files
- rm temp_column_*.tsv squared_column_*.tsv derivative_column_*.tsv squared_derivative_column_*.tsv
+ #rm temp_column_*.tsv squared_column_*.tsv derivative_column_*.tsv squared_derivative_column_*.tsv
 
 }
 
