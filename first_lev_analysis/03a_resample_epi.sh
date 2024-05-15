@@ -33,7 +33,7 @@ export -f resample_epi
 
 find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed.nii.gz' > "$path_der/input_files.txt"
 
-N=50
+N=1
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait

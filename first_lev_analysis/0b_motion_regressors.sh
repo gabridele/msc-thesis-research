@@ -61,7 +61,7 @@ export -f process_regr
 find "$path_der" -type f -name '*_task-scap_bold_confounds.tsv' > "$path_der/confounds_files.txt"
 
 
-N=50
+N=10
 (
 for ii in $(cat "$path_der/confounds_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
