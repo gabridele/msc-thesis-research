@@ -2,24 +2,34 @@
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
 path_der="derivatives/"
 
-echo "###################################################################" 
-echo ".....................Binarizing CSF image....................."
 
-#2
-function binarize_img { 
+echo "###################################################################" 
+echo ".................Performing fitting..................."
+
+function fitting {
  input="$1"
  sub_id=$(basename "$input" | cut -d'_' -f1)
- output="${input%probtissue.nii.gz}bin.nii.gz"
-    
+ matrix="${input%_bold*}.xmat.1D"
+ mask="${input%_preproc_*}_brainmask_resampled.nii.gz"
+ fit_output="${input%_bold*}_fit.nii.gz"
+ res_output="${input%_bold*}_REML_whitened_residuals.nii.gz"
+
  if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
-		
+
   echo -e "Processing input: $input \n..."
-		
+  echo -e "With mask: $mask... \n"
   if [ -f "$output" ]; then
     echo "Output file $output already exists, skipping..."
   else
-    fslmaths "$input" -thr 0.5 -bin "$output"
-    echo "Binarized $input and saved as $output"
+    3dREMLfit \
+    -input "$input" \
+    -matrix "$matrix" \
+    -mask "$mask" \
+    -Rbuck "$fit_output" \
+    -fout \
+    -tout \
+    -Rwherr "$res_output" \
+    -verb
   fi
  else
   echo -e "\n Subject $sub_id is excluded. Skipping..."
@@ -27,16 +37,14 @@ function binarize_img {
 
 }
 
-export -f binarize_img
+export -f fitting
+find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 
-find "$path_der" -type f -name '*CSF_probtissue.nii.gz' > "$path_der/input_files.txt"
-
-N=5
+N=2
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
-   binarize_img "$ii" & 
+   smooth "$ii" "$mask" "$matrix" & 
 done
 )
-
 rm "$path_der/input_files.txt"

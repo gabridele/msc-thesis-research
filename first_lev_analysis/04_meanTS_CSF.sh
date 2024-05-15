@@ -4,26 +4,27 @@ path_der="derivatives/"
 
 
 echo "###################################################################" 
-echo ".................Resampling mask of task with T1w brain mask..................."
+echo ".................Computing mean ts for CSF..................."
 
-# 3.1 resample mask of scap task
-function resample_scap_mask { 
+#4
+function mean_ts {
  input="$1"
- sub_id=$(basename "$input" | cut -d'_' -f1)
+ sub_id=$(basename "$input" | cut -d'_' -f1) 
  anat="${input//\/func\//\/anat\/}"
- mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
- output="${input%.nii.gz}_resampled.nii.gz"
-
+ mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
+ output="${input%_bold*}_meants_CSF.tsv" 
+	
  if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
-		
+
   echo -e "Processing input: $input \n..."
   echo -e "With mask: $mask... \n"
 		
   if [ -f "$output" ]; then
     echo "Output file $output already exists, skipping..."
   else
-    3dresample -master "$mask" -prefix "$output" -input "$input"
-    echo "Resampled $input and saved as $output"
+    fslmeants -i "$input" -o "$output" -m "$mask"
+    echo -e "csf\n$(cat "$output")" > "$output"
+    #add "csf" header, cause it skips first row assuming it's header
   fi
  else
   echo -e "\n Subject $sub_id is excluded. Skipping..."
@@ -31,15 +32,14 @@ function resample_scap_mask {
 
 }
 
-export -f resample_scap_mask
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz' > "$path_der/input_files.txt"
+export -f mean_ts
+find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 
-N=1
+N=60
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
-   resample_scap_mask "$ii" "$mask" & 
+   mean_ts "$ii" "$mask" & 
 done
 )
-
 rm "$path_der/input_files.txt"
