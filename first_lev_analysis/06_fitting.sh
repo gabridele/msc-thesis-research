@@ -40,11 +40,14 @@ function fitting {
 export -f fitting
 find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
 
-N=2
+N=1
+current_subject=0
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
+   ((current_subject++))
    ((i=i%N)); ((i++==0)) && wait
-   smooth "$ii" "$mask" "$matrix" & 
+   fitting "$ii" "$mask" "$matrix" & 
+   echo "Processing subject $current_subject of $(wc -l < "$path_der/input_files.txt")"
 done
 )
 rm "$path_der/input_files.txt"
