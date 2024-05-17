@@ -93,7 +93,7 @@ N=1
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
-   smooth "$ii" "$mask" "$events_low15" "$events_low30" "$events_low45" "$events_high15" "$events_high30" "$events_high45" "$regressor_wm" "$regressor_tsv" "$regressorCSF_tsv" & 
+   deconvolve "$ii" "$mask" "$events_low15" "$events_low30" "$events_low45" "$events_high15" "$events_high30" "$events_high45" "$regressor_wm" "$regressor_tsv" "$regressorCSF_tsv" & 
 done
 )
 rm "$path_der/input_files.txt"
