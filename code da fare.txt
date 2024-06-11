@@ -1,0 +1,40 @@
+carichi atlante con nibabel aka array
+filtrando di indice in indice ...??
+hai un vecctore che ha tante enrtey quante rois aka vettore con 400 righe. un valore per ogni parcella
+un array vuoto in 3d grande quanto immagine
+in un loop??
+np.where my atlas = 1/100 = mi dà indice array e lì metto valore statistica
+tiro fuori per parcella un indice di variabilità e lo vediamo sul cervello e lo sogliamo con fsl eyes etc
+
+
+scalare parcelle in range 0-1 scikitlearn
+prendi misura di dispersione IQ range aka terzo-primo quartile. poi lo plottiamo sul cervello. valore di ogni nodo dell0'altantwe che scruivo in nifti
+
+
+
+perhcé 2 seeds onmly
+dynamic
+spiegazine parsimoniosa del cervello si spiega in situa state-anti state. region x è attiva e region y no, a un certo opunto troverai situa inversa
+co activation patterns (caps)
+
+
+da calc association weight mtrx- da output del comp sxcenario
+
+media 3 low wm e media 3 high wm e fai high - low
+
+fslsplit - svolge timeseries salva 000,001.... devo prendere volumi di coef per ogni condiz rimetto come timeseries e fslmaths input -tmin e butta fuori volume che è media di tre condizioni in vol solo
+
+fsl lavora con double precision aka quanti numeri dopo la virgola
+
+sottraggo immagini --- 
+
+poi apposto
+
+
+estrarre poi valori per parcella. registrare da 2006 a 2009 l'atlante e estrarre valori
+
+matrice di ass weitghts 454x454 e di là avrò vettore del task che avrà dimensione 1x454
+
+e poi pronti per fare modello loro
+
+parallelizza sui soggetti - competitive scenario spreading dynamics
