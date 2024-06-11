@@ -1,17 +1,47 @@
+#!/bin/bash
+path_der="derivatives/"
 
-3dcalc -a "$input" -expr '(a == 1) * a' -prefix low_wm_condition1500.nii.gz
-3dcalc -a "$input" -expr '(a == 4) * a' -prefix low_wm_condition3000.nii.gz
-3dcalc -a "$input" -expr '(a == 7) * a' -prefix low_wm_condition4500.nii.gz
+function avg_wm {
+  input="$1"
+  sub_id=$(basename "$input" | cut -d'_' -f1)
+  output="${input%_task-scap_fit.nii.gz}_diff_wm.nii.gz"
+  sub_path=$(dirname "$input")
+  
+  # temporary directory
+  tmp_dir=$(mktemp -d -p "$sub_path")
 
-3dMean -prefix avg_low_wm.nii.gz low_wm_condition*.nii.gz
+  # low wm
+  3dbucket -prefix "${tmp_dir}/low_wm_condition1500_${sub_id}.nii.gz" -fbuc "$input[1]"
+  3dbucket -prefix "${tmp_dir}/low_wm_condition3000_${sub_id}.nii.gz" -fbuc "$input[4]"
+  3dbucket -prefix "${tmp_dir}/low_wm_condition4500_${sub_id}.nii.gz" -fbuc "$input[7]"
 
-3dcalc -a "$input" -expr '(a == 10) * a' -prefix high_wm_condition1500.nii.gz
-3dcalc -a "$input" -expr '(a == 13) * a' -prefix high_wm_condition3000.nii.gz
-3dcalc -a "$input" -expr '(a == 16) * a' -prefix high_wm_condition4500.nii.gz
+  3dMean -prefix "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz" ${tmp_dir}/low_wm_condition*.nii.gz
 
-3dMean -prefix avg_high_wm.nii.gz high_wm_condition*.nii.gz
+  # high mw
+  3dbucket -prefix "${tmp_dir}/high_wm_condition1500_${sub_id}.nii.gz" -fbuc "$input[10]"
+  3dbucket -prefix "${tmp_dir}/high_wm_condition3000_${sub_id}.nii.gz" -fbuc "$input[13]"
+  3dbucket -prefix "${tmp_dir}/high_wm_condition4500_${sub_id}.nii.gz" -fbuc "$input[16]"
 
-rm low_wm_condition*.nii.gz
-rm high_wm_condition*.nii.gz
+  3dMean -prefix "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" ${tmp_dir}/high_wm_condition*.nii.gz
+  
+  # low-high
+  3dcalc -a "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz" -b "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" -expr 'a - b' -prefix "$output"
+ 
+  mv "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz" "${sub_path}/avg_low_wm_${sub_id}.nii.gz"
+  mv "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" "${sub_path}/avg_high_wm_${sub_id}.nii.gz"
 
-3dcalc -a avg_low_wm.nii.gz -b avg_high_wm.nii.gz -expr 'a - b' -prefix diff_high_minus_low.nii.gz
+  rm -rf "$tmp_dir"
+}
+  
+export -f avg_wm
+
+find "$path_der" -type f -name '*_task-scap_fit.nii.gz' > "$path_der/fit_files.txt"
+
+N=2
+(
+for ii in $(cat "$path_der/fit_files.txt"); do 
+   ((i=i%N)); ((i++==0)) && wait
+   avg_wm "$ii" & 
+done
+)
+rm "$path_der/fit_files.txt"
