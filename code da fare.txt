@@ -20,7 +20,7 @@ co activation patterns (caps)
 
 da calc association weight mtrx- da output del comp sxcenario
 
-media 3 low wm e media 3 high wm e fai high - low
+media 3 low wm e media 3 high wm e fai low-high
 
 fslsplit - svolge timeseries salva 000,001.... devo prendere volumi di coef per ogni condiz rimetto come timeseries e fslmaths input -tmin e butta fuori volume che è media di tre condizioni in vol solo
 
