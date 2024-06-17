@@ -54,6 +54,7 @@ def activity_flow_conn(conn_array, func_array):
     return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr
     
 def scatter_plot_func(taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, sub_id=None, save_dir=None):
+ 
     pred_values = taskPredMatrix[:, 0, 0]
     actual_values = taskActualMatrix[:, 0, 0]
 
@@ -106,7 +107,7 @@ def main(input_conn, input_func):
         f.write(f"spearman_corr: {spearman_corr}\n")
 
     save_dir = "derivatives/output_sample_AFM/"
-    scatter_plot = scatter_plot_func(taskPredMatrix, taskActualMatrix, sub_id, save_dir)
+    scatter_plot = scatter_plot_func(taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, sub_id, save_dir)
 
 if __name__ == "__main__":
 
