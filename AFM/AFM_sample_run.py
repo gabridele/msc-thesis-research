@@ -1,6 +1,7 @@
 #### right code !!!!
 import sys
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import spearmanr
 
@@ -84,7 +85,7 @@ def main(input_conn, input_func):
     sub_id = input_conn.split('/')[-3]
     print(sub_id)
 
-    conn_array = np.loadtxt(input_conn, delimiter=",", dtype=float)
+    conn_array = pd.read_csv(input_conn, delimiter=',', header=None, dtype=float).to_numpy()
     func_array = np.load(input_func)
 
     func_array = np.expand_dims(func_array, axis=1)

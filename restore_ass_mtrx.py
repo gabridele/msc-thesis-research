@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 
 def restore_matrix(matrix_ass, matrix_zero):
+    
     original_size = 454
     if matrix_ass.shape == (original_size, original_size):
         return matrix_ass
@@ -21,7 +22,9 @@ def restore_matrix(matrix_ass, matrix_zero):
 
 def main(input_ass, input_zero):
     sub_id = input_ass.split('/')[-3]
-
+    
+    print('subject:', sub_id)
+    
     matrix_ass = pd.read_csv(input_ass, delimiter=',', header=None).to_numpy().astype(float)
     matrix_zero = pd.read_csv(input_zero, delimiter=',', header=None).to_numpy().astype(float)
     
