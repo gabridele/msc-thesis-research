@@ -1,9 +1,10 @@
 #### right code !!!!
 import sys
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, zscore, pearsonr
 
 
 def activity_flow_conn(conn_array, func_array):
@@ -43,38 +44,41 @@ def activity_flow_conn(conn_array, func_array):
                 # Calculate activity flow prediction
                 taskPredMatrix[regionNum, taskNum, subjNum] = np.sum(taskActVect[otherRegions] * stateFCVect[otherRegions])
             # Normalize values (z-score)
-            taskPredMatrix[:, taskNum, subjNum] = (taskPredMatrix[:, taskNum, subjNum] - np.mean(taskPredMatrix[:, taskNum, subjNum])) / np.std(taskPredMatrix[:, taskNum, subjNum])
-            taskActualMatrix[:, taskNum, subjNum] = (taskActMatrix[:, taskNum, subjNum] - np.mean(taskActMatrix[:, taskNum, subjNum])) / np.std(taskActMatrix[:, taskNum, subjNum])
+            taskPredMatrix[:, taskNum, subjNum] = zscore(taskPredMatrix[:, taskNum, subjNum])
+            taskActualMatrix[:, taskNum, subjNum] = zscore(taskActMatrix[:, taskNum, subjNum])
 
             # Calculate predicted to actual similarity for this task
-            pearson_corr = np.corrcoef(taskPredMatrix[:, taskNum, subjNum], taskActualMatrix[:, taskNum, subjNum])[0]
-            spearman_corr = spearmanr(taskPredMatrix[:, taskNum, 0], taskActualMatrix[:, taskNum, 0])[0]
+            pearson_corr = pearsonr(taskPredMatrix[:, taskNum, subjNum], taskActualMatrix[:, taskNum, subjNum])
+            spearman_corr, spearman_p_val = spearmanr(taskPredMatrix[:, taskNum, 0], taskActualMatrix[:, taskNum, 0])
         #taskPredRs[taskNum, subjNum] = pearson_corr[0, 1]
     
-    return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr
+    return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val
     
-def scatter_plot_func(taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, sub_id=None, save_dir=None):
- 
+def scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id=None, save_dir=None):
+    
+    spearman_corr = float(spearman_corr)
+    spearman_p_val = float(spearman_p_val)
+    
     pred_values = taskPredMatrix[:, 0, 0]
     actual_values = taskActualMatrix[:, 0, 0]
 
     plt.figure()
-    plt.scatter(range(len(pred_values)), pred_values, color='blue', label='Predicted Activation')
-    plt.scatter(range(len(actual_values)), actual_values, color='red', label='Actual Activation')
+    plt.scatter(range(len(pred_values)), pred_values, color='lightblue', label='Predicted Activation')
+    plt.scatter(range(len(actual_values)), actual_values, color='lightcoral', label='Empirical Activation')
 
-    plt.title(f'Predicted vs Actual Activation for {sub_id}' if sub_id else 'Predicted vs Actual Activation')
+    plt.title(f'Predicted vs Empirical Activation for {sub_id}' if sub_id else 'Predicted vs Empirical Activation')
     plt.xlabel('Region')
     plt.ylabel('Activation')
 
-    # Add correlation values to the legend
     plt.legend(
-        loc='upper right',
-        title=f"Pearson: {pearson_corr:.2f}, Spearman: {spearman_corr:.2f}",
+        loc='upper left',  # Position inside the plot
+        bbox_to_anchor=(1.05, 1),  # Move the legend outside the plot
+        borderaxespad=0.,
+        title=f"Spearman's $\\rho$: {spearman_corr:.3f} (p={spearman_p_val:.2g})"
     )
-
     if save_dir and sub_id:
         save_path = f"{save_dir}/scatter_plot_{sub_id}.png"
-        plt.savefig(save_path)
+        plt.savefig(save_path, bbox_inches='tight')
         print(f"Plot saved to {save_path}")
 
     plt.show()
@@ -96,9 +100,11 @@ def main(input_conn, input_func):
     conn_array = np.expand_dims(conn_array, axis=3)
 
 
-    taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr = activity_flow_conn(conn_array, func_array)
+    taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val = activity_flow_conn(conn_array, func_array)
     
-    correlations_path = f"derivatives/output_sample_AFM/correlations_{sub_id}.txt"
+    os.makedirs('derivatives/output_AFM', exist_ok=True)
+    
+    correlations_path = f"derivatives/output_AFM/correlations_{sub_id}.txt"
 
     # Open the file in write mode
     with open(correlations_path, 'w') as f:
@@ -106,8 +112,8 @@ def main(input_conn, input_func):
         f.write(f"pearson_corr: {pearson_corr}\n")
         f.write(f"spearman_corr: {spearman_corr}\n")
 
-    save_dir = "derivatives/output_sample_AFM/"
-    scatter_plot = scatter_plot_func(taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, sub_id, save_dir)
+    save_dir = "derivatives/output_AFM/"
+    scatter_plot = scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
 
 if __name__ == "__main__":
 
