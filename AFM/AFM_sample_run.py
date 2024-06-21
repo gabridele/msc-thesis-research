@@ -113,7 +113,7 @@ def main(input_conn, input_func):
         f.write(f"spearman_corr: {spearman_corr}\n")
 
     save_dir = "derivatives/output_AFM/"
-    scatter_plot = scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
+    scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
 
 if __name__ == "__main__":
 
