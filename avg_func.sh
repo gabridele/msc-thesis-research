@@ -4,7 +4,6 @@ path_der="derivatives/"
 function avg_wm {
   input="$1"
   sub_id=$(basename "$input" | cut -d'_' -f1)
-  output="${input%_task-scap_fit.nii.gz}_diff_wm.nii.gz"
   sub_path=$(dirname "$input")
   
   # temporary directory
