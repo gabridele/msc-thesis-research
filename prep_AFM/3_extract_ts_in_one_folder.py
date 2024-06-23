@@ -13,7 +13,6 @@ def extract_ts(subject_name):
    
    ts = ts[:, :1]
    ts = ts.T
-   
    sub_name_no_ending=('.').join(subject_name.split('/')[-1].split('.')[:-2])
    
    np.save(out_dir+'/'+sub_name_no_ending,'_1vol_',ts)
@@ -45,7 +44,7 @@ def main():
    pool = Pool(processes=2)
 
    pool.map(extract_ts, subjects)
-
+ 
 # If called from the command line, run main()
 if __name__ == '__main__':
    main()
