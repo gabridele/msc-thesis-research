@@ -13,9 +13,9 @@ function fake_ts {
 
 export -f fake_ts
 
-find "$path_der" -type f -name '*_diff_wm.nii.gz' > "$path_der/fake_ts_files.txt"
+find "$path_der" -type f -name '*_wm_condition*.nii.gz' > "$path_der/fake_ts_files.txt"
 
-N=20
+N=2
 (
 for ii in $(cat "$path_der/fake_ts_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait

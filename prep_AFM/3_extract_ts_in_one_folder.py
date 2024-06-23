@@ -21,15 +21,17 @@ def main():
 
    global path_to_atlas
 
-   path_to_atlas = os.getcwd()+'derivatives/template'+'/'+'Schaefer2018_400Parcels_Tian_Subcortex_S4_1mm_2009c_NLinAsymm.nii.gz'
-   
+   path_to_atlas = os.getcwd()+'/derivatives/templates/'+'Schaefer2018_400Parcels_Tian_Subcortex_S4_1mm_2009c_NLinAsymm.nii.gz'
+   print(path_to_atlas)
    global out_dir
-   out_dir = os.getcwd()
-
+   out_dir = os.getcwd()+'/derivatives/'
+   print(out_dir)
    #path nella cartella coi dati func
-   subjects = sorted(glob.glob('/home/ludovicocoletta/Documents/IntraOpMap_2022/04_preprocessed_rsfmri/dataverse_files/GSP1000/sub*/func/*bld001*.nii.gz'))
-
-   pool = Pool(processes=6)
+   single_files = os.getcwd()+'/derivatives/sub*/func/*_2vol_ts.nii.gz'
+   print(single_files)
+   subjects = sorted(glob.glob(single_files))
+   print(subjects)
+   pool = Pool(processes=2)
 
    pool.map(extract_ts, subjects)
 
