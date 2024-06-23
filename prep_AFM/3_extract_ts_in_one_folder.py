@@ -23,7 +23,7 @@ def extract_ts(subject_name):
 
     sub_name_no_ending = os.path.basename(subject_name).rsplit('.', 2)[0]
 
-    output_path = os.path.join(out_dir, sub_id, 'func', sub_name_no_ending + '_1vol_.npy')
+    output_path = os.path.join(out_dir, sub_id, 'func', sub_name_no_ending + '_1vol.npy')
     np.save(output_path, ts)
 
 def main():
