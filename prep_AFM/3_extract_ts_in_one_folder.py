@@ -11,6 +11,9 @@ def extract_ts(subject_name):
 
    ts,labels=regions.img_to_signals_labels(image.load_img(subject_name,dtype='float64'), image.load_img(path_to_atlas), mask_img=None, background_label=0)
    
+   ts = ts[:, :1]
+   ts = ts.T
+   
    sub_name_no_ending=('.').join(subject_name.split('/')[-1].split('.')[:-2])
    
    np.save(out_dir+'/'+sub_name_no_ending,'_1vol_',ts)
