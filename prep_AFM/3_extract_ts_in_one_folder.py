@@ -17,9 +17,9 @@ def extract_ts(subject_name):
         mask_img=None,
         background_label=0
     )
-
-    ts = ts[:, :1]
     ts = ts.T
+    ts = ts[:, :1]
+    
 
     sub_name_no_ending = os.path.basename(subject_name).rsplit('.', 2)[0]
 
@@ -39,7 +39,7 @@ def main():
 
     subjects = sorted(glob.glob(single_files))
 
-    with Pool(processes=2) as pool:
+    with Pool(processes=80) as pool:
         pool.map(extract_ts, subjects)
 
 if __name__ == '__main__':

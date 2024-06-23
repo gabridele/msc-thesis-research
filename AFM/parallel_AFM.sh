@@ -3,18 +3,18 @@ path_der="derivatives/"
 function run_AFM {
     arg1="$1"
     sub_id=$(basename "$arg1" | grep -oP 'sub-\d+')
-    arg2="${arg1%dwi/full_association_mtrix_sub*}func/${sub_id}_diff_wm_2vol_ts_1vol.npy"
+    arg2="${arg1%dwi/full_association_mtrix_sub*}func/${sub_id}*_2vol_ts_1vol_.npy"
 
     echo -e "############# $sub_id, $arg1, $arg2"
 
-    python ../code/AFM_sample_run.py $arg1 $arg2
+    python ../code/AFM_run.py $arg1 $arg2
 }
 
 export -f run_AFM
 
 find "$path_der" -type f -name '*full_association_mtrix_*.csv' > "$path_der/ass_mtrx_files.txt"
 
-N=10
+N=80
 (
 for ii in $(cat "$path_der/ass_mtrx_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait

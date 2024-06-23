@@ -1,4 +1,4 @@
-path_der="derivatives/30_seed"
+path_der="derivatives/"
 
 function run_AFM {
     arg1="$1"
@@ -14,7 +14,7 @@ export -f run_AFM
 
 find "$path_der" -type f -name '*full_association_mtrix_*.csv' > "$path_der/../ass_mtrx_files.txt"
 
-N=1
+N=80
 (
 for ii in $(cat "$path_der/ass_mtrx_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
