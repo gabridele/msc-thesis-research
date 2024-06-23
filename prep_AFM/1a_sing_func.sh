@@ -47,7 +47,7 @@ function sing_wm {
   
 export -f sing_wm
 
-#find "$path_der" -type f -name '*_task-scap_fit.nii.gz' > "$path_der/fit_files.txt"
+find "$path_der" -type f -name '*_task-scap_fit.nii.gz' > "$path_der/fit_files.txt"
 
 N=2
 (
@@ -56,4 +56,4 @@ for ii in $(cat "$path_der/10_files.txt"); do
    sing_wm "$ii" & 
 done
 )
-#rm "$path_der/fit_files.txt"
+rm "$path_der/fit_files.txt"
