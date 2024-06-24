@@ -4,8 +4,10 @@ path_der="derivatives/"
 
 function fake_ts {
   input="$1"
-  output="${input%.nii.gz}_2vol_ts.nii.gz"
-
+  sub_id=$(basename "$input" | grep -oP 'sub-\d+')
+  condition=$(echo "$input" | grep -oP '(?<=condition)\d+')
+  output="${input%_condition*}_${condition}_${sub_id}_2vol_ts.nii.gz"
+  
   fslmerge -t "$output" "$input" "$input"
 
   echo -e "Done with $output"

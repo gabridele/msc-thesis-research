@@ -3,7 +3,7 @@ path_der="derivatives/"
 function run_AFM {
     arg1="$1"
     sub_id=$(basename "$arg1" | grep -oP 'sub-\d+')
-    arg2="${arg1%dwi/full_association_mtrix_sub*}func/${sub_id}*_2vol_ts_1vol_.npy"
+    arg2="${arg1%dwi/full_association_mtrix_sub*}func/low_wm_*_${sub_id}_ts_1vol.npy"
 
     echo -e "############# $sub_id, $arg1, $arg2"
 

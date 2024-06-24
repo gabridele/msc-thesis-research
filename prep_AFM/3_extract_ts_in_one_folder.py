@@ -1,11 +1,8 @@
-from nilearn import image
-from nilearn import regions
+from nilearn import image, regions # type: ignore
 import numpy as np
 import os
 import glob
-import time
 from multiprocessing import Pool
-import scipy.io as sio
 
 def extract_ts(subject_name):
 
@@ -17,13 +14,14 @@ def extract_ts(subject_name):
         mask_img=None,
         background_label=0
     )
+
     ts = ts.T
     ts = ts[:, :1]
     
-
     sub_name_no_ending = os.path.basename(subject_name).rsplit('.', 2)[0]
+    sub_name_no_2vol = sub_name_no_ending.replace('_2vol', '')
 
-    output_path = os.path.join(out_dir, sub_id, 'func', sub_name_no_ending + '_1vol.npy')
+    output_path = os.path.join(out_dir, sub_id, 'func', sub_name_no_2vol + '_1vol.npy')
     np.save(output_path, ts)
 
 def main():
