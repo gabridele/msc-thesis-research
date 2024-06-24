@@ -2,10 +2,17 @@
 import sys
 import os
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import spearmanr, zscore, pearsonr
+import pandas as pd # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+from scipy.stats import spearmanr, zscore, pearsonr # type: ignore
 
+def check_for_nan(array, array_name):
+    if np.isnan(array).any():
+        print(f"There are NaN values in {array_name}.")
+        nan_count = np.isnan(array).sum()
+        print(f"Total number of NaN values in {array_name}: {nan_count}")
+    else:
+        print(f"There are no NaN values in {array_name}.")
 
 def activity_flow_conn(conn_array, func_array):
     
@@ -90,11 +97,16 @@ def main(input_conn, input_func):
     sub_id = input_conn.split('/')[-3]
     print(sub_id)
 
+    base_name = os.path.basename(input_func)
+    condition = base_name.split('_sub')[0]
+
     conn_array = pd.read_csv(input_conn, delimiter=',', header=None, dtype=float).to_numpy()
     func_array = np.load(input_func)
 
     func_array = np.expand_dims(func_array, axis=1)
     func_array = np.expand_dims(func_array, axis=2)
+
+    func_arrayy = check_for_nan(func_array, "func_array")
 
     conn_array = np.expand_dims(conn_array, axis=2)
     conn_array = np.expand_dims(conn_array, axis=3)
@@ -102,9 +114,9 @@ def main(input_conn, input_func):
 
     taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val = activity_flow_conn(conn_array, func_array)
     
-    os.makedirs('derivatives/output_AFM', exist_ok=True)
+    os.makedirs(f'derivatives/output_AFM_{condition}', exist_ok=True)
     
-    correlations_path = f"derivatives/output_AFM/correlations_{sub_id}.txt"
+    correlations_path = f"derivatives/output_AFM_{condition}/correlations_{sub_id}.txt"
 
     # Open the file in write mode
     with open(correlations_path, 'w') as f:
@@ -112,7 +124,13 @@ def main(input_conn, input_func):
         f.write(f"pearson_corr: {pearson_corr}\n")
         f.write(f"spearman_corr: {spearman_corr}\n")
 
-    save_dir = "derivatives/output_AFM/"
+    save_dir = f"derivatives/output_AFM_{condition}"
+
+    task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_{sub_id}_{condition}.npy")
+    np.save(task_pred_matrix_path, taskPredMatrix)
+    
+    print(taskPredMatrix.shape)
+    
     scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
 
 if __name__ == "__main__":

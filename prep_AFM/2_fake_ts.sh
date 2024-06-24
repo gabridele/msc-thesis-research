@@ -5,8 +5,8 @@ path_der="derivatives/"
 function fake_ts {
   input="$1"
   sub_id=$(basename "$input" | grep -oP 'sub-\d+')
-  condition=$(echo "$input" | grep -oP '(?<=condition)\d+')
-  output="${input%_condition*}_${condition}_${sub_id}_2vol_ts.nii.gz"
+  condition=$(echo "$input" | grep -oP '(?<=_wm_)\d+(?=_sub)')
+  output="${input%_wm*}_wm_${condition}_${sub_id}_2vol_ts.nii.gz"
   
   fslmerge -t "$output" "$input" "$input"
 
@@ -15,7 +15,7 @@ function fake_ts {
 
 export -f fake_ts
 
-find "$path_der" -type f -name '*_wm_condition*.nii.gz' > "$path_der/fake_ts_files.txt"
+find "$path_der" -type f -name '*_wm_*.nii.gz' > "$path_der/fake_ts_files.txt"
 
 N=2
 (
