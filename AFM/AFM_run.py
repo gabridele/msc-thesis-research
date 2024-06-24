@@ -92,7 +92,7 @@ def scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_
     
     return
 
-def main(input_conn, input_func):
+def main(input_conn, input_func, n_seeds):
 
     sub_id = input_conn.split('/')[-3]
     print(sub_id)
@@ -114,9 +114,9 @@ def main(input_conn, input_func):
 
     taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val = activity_flow_conn(conn_array, func_array)
     
-    os.makedirs(f'derivatives/output_AFM_{condition}', exist_ok=True)
+    os.makedirs(f'derivatives/output_AFM_{condition}_{n_seeds}', exist_ok=True)
     
-    correlations_path = f"derivatives/output_AFM_{condition}/correlations_{sub_id}.txt"
+    correlations_path = f"derivatives/output_AFM_{condition}/correlations_{sub_id}__{n_seeds}.txt"
 
     # Open the file in write mode
     with open(correlations_path, 'w') as f:
@@ -124,9 +124,9 @@ def main(input_conn, input_func):
         f.write(f"pearson_corr: {pearson_corr}\n")
         f.write(f"spearman_corr: {spearman_corr}\n")
 
-    save_dir = f"derivatives/output_AFM_{condition}"
+    save_dir = f"derivatives/output_AFM_{condition}_{n_seeds}"
 
-    task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_{sub_id}_{condition}.npy")
+    task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_{sub_id}_{condition}_{n_seeds}.npy")
     np.save(task_pred_matrix_path, taskPredMatrix)
     
     print(taskPredMatrix.shape)
@@ -137,5 +137,6 @@ if __name__ == "__main__":
 
     input_conn = sys.argv[1]
     input_func = sys.argv[2]
-    
-    main(input_conn, input_func)
+    n_seeds = sys.argv[3] # to put right name when saving
+
+    main(input_conn, input_func, n_seeds)

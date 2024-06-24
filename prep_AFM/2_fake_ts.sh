@@ -17,7 +17,7 @@ export -f fake_ts
 
 find "$path_der" -type f -name '*_wm_*.nii.gz' > "$path_der/fake_ts_files.txt"
 
-N=2
+N=80
 (
 for ii in $(cat "$path_der/fake_ts_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
