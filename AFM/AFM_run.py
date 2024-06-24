@@ -5,14 +5,7 @@ import numpy as np
 import pandas as pd # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 from scipy.stats import spearmanr, zscore, pearsonr # type: ignore
-
-def check_for_nan(array, array_name):
-    if np.isnan(array).any():
-        print(f"There are NaN values in {array_name}.")
-        nan_count = np.isnan(array).sum()
-        print(f"Total number of NaN values in {array_name}: {nan_count}")
-    else:
-        print(f"There are no NaN values in {array_name}.")
+from sklearn.metrics import r2_score, mean_absolute_error # type: ignore
 
 def activity_flow_conn(conn_array, func_array):
     
@@ -54,12 +47,15 @@ def activity_flow_conn(conn_array, func_array):
             taskPredMatrix[:, taskNum, subjNum] = zscore(taskPredMatrix[:, taskNum, subjNum])
             taskActualMatrix[:, taskNum, subjNum] = zscore(taskActMatrix[:, taskNum, subjNum])
 
-            # Calculate predicted to actual similarity for this task
+            # get metrics
             pearson_corr = pearsonr(taskPredMatrix[:, taskNum, subjNum], taskActualMatrix[:, taskNum, subjNum])
             spearman_corr, spearman_p_val = spearmanr(taskPredMatrix[:, taskNum, 0], taskActualMatrix[:, taskNum, 0])
+            r2 = r2_score(taskActualMatrix[:, taskNum, subjNum], taskPredMatrix[:, taskNum, subjNum])
+            mae = mean_absolute_error(taskActualMatrix[:, taskNum, subjNum], taskPredMatrix[:, taskNum, subjNum])       
+        
         #taskPredRs[taskNum, subjNum] = pearson_corr[0, 1]
     
-    return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val
+    return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val, r2, mae
     
 def scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id=None, save_dir=None):
     
@@ -78,8 +74,8 @@ def scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_
     plt.ylabel('Activation')
 
     plt.legend(
-        loc='upper left',  # Position inside the plot
-        bbox_to_anchor=(1.05, 1),  # Move the legend outside the plot
+        loc='upper left',  # position inside the plot
+        bbox_to_anchor=(1.05, 1),  # move legend outside the plot
         borderaxespad=0.,
         title=f"Spearman's $\\rho$: {spearman_corr:.3f} (p={spearman_p_val:.2g})"
     )
@@ -106,23 +102,23 @@ def main(input_conn, input_func, n_seeds):
     func_array = np.expand_dims(func_array, axis=1)
     func_array = np.expand_dims(func_array, axis=2)
 
-    func_arrayy = check_for_nan(func_array, "func_array")
-
     conn_array = np.expand_dims(conn_array, axis=2)
     conn_array = np.expand_dims(conn_array, axis=3)
 
 
-    taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val = activity_flow_conn(conn_array, func_array)
+    taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val, r2, mae = activity_flow_conn(conn_array, func_array)
     
     os.makedirs(f'derivatives/output_AFM_{condition}_{n_seeds}', exist_ok=True)
     
-    correlations_path = f"derivatives/output_AFM_{condition}/correlations_{sub_id}__{n_seeds}.txt"
+    metrics_path = f"derivatives/output_AFM_{condition}_{n_seeds}/eval_metrics_{sub_id}_{n_seeds}.txt"
 
     # Open the file in write mode
-    with open(correlations_path, 'w') as f:
+    with open(metrics_path, 'w') as f:
         # Write the variables to the file
         f.write(f"pearson_corr: {pearson_corr}\n")
         f.write(f"spearman_corr: {spearman_corr}\n")
+        f.write(f"R^2: {r2}\n")
+        f.write(f"MAE: {mae}\n")
 
     save_dir = f"derivatives/output_AFM_{condition}_{n_seeds}"
 
