@@ -13,10 +13,10 @@ function run_AFM_sing {
             arg2_low="${arg1%dwi/full_association_mtrix_sub*}func/low_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
             arg2_high="${arg1%dwi/full_association_mtrix_sub*}func/high_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
 
-            echo -e "############# $sub_id, $arg1, $arg2_low ######### \n" 
+            echo -e "############# Processing $sub_id, $arg1, $arg2_low ######### \n" 
             python ../code/AFM_run.py "$arg1" "$arg2_low" "$n_seed"
 
-            echo -e "############# $sub_id, $arg1, $arg2_high ######### \n"
+            echo -e "############# Processing $sub_id, $arg1, $arg2_high ######### \n"
             python ../code/AFM_run.py "$arg1" "$arg2_high" "$n_seed"
         done
     else
@@ -26,7 +26,7 @@ function run_AFM_sing {
 
 export -f run_AFM_sing
 
-find "$path_der" -type f -name '*full_association_mtrix_*_2seeds.csv' > "$path_der/ass_mtrx_files.txt"
+find "$path_der" -type f -name '*full_association_mtrix_*_30seeds.csv' > "$path_der/ass_mtrx_files.txt"
 
 N=100
 (
