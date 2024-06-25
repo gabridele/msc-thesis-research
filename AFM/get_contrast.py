@@ -118,8 +118,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 13:
         print("##################### \
-                \n Syntax error: Usage: python [this script.py] p_low_1500 p_low_3000 p_low_4500 p_high_1500 p_high_3000 p_high_4500 \
-                e_low_1500 e_low_3000 e_low_4500 e_high_1500 e_high_3000 e_high_4500 \
+                \n Syntax error: Usage: python [this script.py] p_low_1500 p_low_3000 p_low_4500 p_high_1500 p_high_3000 p_high_4500 e_low_1500 e_low_3000 e_low_4500 e_high_1500 e_high_3000 e_high_4500 \
                 \n e = empirical, p = predicted")
         sys.exit(1)
     

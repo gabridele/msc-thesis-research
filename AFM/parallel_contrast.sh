@@ -1,9 +1,10 @@
 path_der="derivatives/"
+'derivatives/output_AFM_low_wm_3000_30.npy/taskPredMatrix_sub-10290_low_wm_3000_30.npy.npy'
 
 function get_contrast {
     p_low_1500="$1"
     sub_id=$(basename "$p_low_1500" | grep -oP 'sub-\d+')
-    n_seed=$(basename "$p_low_1500" | awk -F '_' '{print $NF}' | cut -d 's' -f 1)
+    n_seed=$(basename "$p_low_1500" | grep -oP '(?<=_)\d+(?=\.npy)')
     
     p_low_3000="${p_low_1500%output_AFM*}output_AFM_low_wm_3000_${n_seed}/taskPredMatrix_${sub_id}_low_wm_3000_${n_seed}.npy"
     p_low_4500="${p_low_1500%output_AFM*}output_AFM_low_wm_4500_${n_seed}/taskPredMatrix_${sub_id}_low_wm_4500_${n_seed}.npy"
@@ -21,7 +22,7 @@ function get_contrast {
     if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 
         echo -e "############# Processing $sub_id... \n"
-        python ../code/get_contrast.py
+        python ../code/get_contrast.py $p_low_1500 $p_low_3000 $p_low_4500 $p_high_1500 $p_high_3000 $p_high_4500 $e_low_1500 $e_low_3000 $e_low_4500 $e_high_1500 $e_high_3000 $e_high_4500
         
     else
         echo -e "\n Subject $sub_id is excluded. Skipping..."
