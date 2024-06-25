@@ -19,8 +19,7 @@ def activity_flow_conn(conn_array, func_array):
 
     # Setup for prediction
     taskPredMatrix = np.zeros((numRegions, numTasks, numSubjs))
-    taskPredRs = np.zeros((numTasks, numSubjs))
-    taskActualMatrix = taskActMatrix
+    #taskActualMatrix = taskActMatrix
     regionNumList = np.arange(numRegions)
 
     for subjNum in range(numSubjs):
@@ -43,19 +42,18 @@ def activity_flow_conn(conn_array, func_array):
 
                 # Calculate activity flow prediction
                 taskPredMatrix[regionNum, taskNum, subjNum] = np.sum(taskActVect[otherRegions] * stateFCVect[otherRegions])
-            # Normalize values (z-score)
-            taskPredMatrix[:, taskNum, subjNum] = zscore(taskPredMatrix[:, taskNum, subjNum])
-            taskActualMatrix[:, taskNum, subjNum] = zscore(taskActMatrix[:, taskNum, subjNum])
+            
+            ## Normalize values (z-score)
+            #taskPredMatrix[:, taskNum, subjNum] = zscore(taskPredMatrix[:, taskNum, subjNum])
+            #taskActualMatrix[:, taskNum, subjNum] = zscore(taskActMatrix[:, taskNum, subjNum])
 
             # get metrics
-            pearson_corr = pearsonr(taskPredMatrix[:, taskNum, subjNum], taskActualMatrix[:, taskNum, subjNum])
-            spearman_corr, spearman_p_val = spearmanr(taskPredMatrix[:, taskNum, 0], taskActualMatrix[:, taskNum, 0])
-            r2 = r2_score(taskActualMatrix[:, taskNum, subjNum], taskPredMatrix[:, taskNum, subjNum])
-            mae = mean_absolute_error(taskActualMatrix[:, taskNum, subjNum], taskPredMatrix[:, taskNum, subjNum])       
-        
-        #taskPredRs[taskNum, subjNum] = pearson_corr[0, 1]
+            #pearson_corr = pearsonr(taskPredMatrix[:, taskNum, subjNum], taskActualMatrix[:, taskNum, subjNum, 0])
+            #spearman_corr, spearman_p_val = spearmanr(taskPredMatrix[:, taskNum, 0], taskActualMatrix[:, taskNum, 0, 0])
+            #r2 = r2_score(taskActualMatrix[:, taskNum, subjNum, 0], taskPredMatrix[:, taskNum, subjNum])
+            #mae = mean_absolute_error(taskActualMatrix[:, taskNum, subjNum, 0], taskPredMatrix[:, taskNum, subjNum])
     
-    return taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val, r2, mae
+    return taskPredMatrix
     
 def scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id=None, save_dir=None):
     
@@ -104,30 +102,27 @@ def main(input_conn, input_func, n_seeds):
 
     conn_array = np.expand_dims(conn_array, axis=2)
     conn_array = np.expand_dims(conn_array, axis=3)
-
-
-    taskPredMatrix, taskActualMatrix, pearson_corr, spearman_corr, spearman_p_val, r2, mae = activity_flow_conn(conn_array, func_array)
+    
+    taskPredMatrix = activity_flow_conn(conn_array, func_array)
     
     os.makedirs(f'derivatives/output_AFM_{condition}_{n_seeds}', exist_ok=True)
     
-    metrics_path = f"derivatives/output_AFM_{condition}_{n_seeds}/eval_metrics_{sub_id}_{n_seeds}.txt"
+    #metrics_path = f"derivatives/output_AFM_{condition}_{n_seeds}/eval_metrics_{sub_id}_{n_seeds}.txt"
 
-    # Open the file in write mode
-    with open(metrics_path, 'w') as f:
-        # Write the variables to the file
-        f.write(f"pearson_corr: {pearson_corr}\n")
-        f.write(f"spearman_corr: {spearman_corr}\n")
-        f.write(f"R^2: {r2}\n")
-        f.write(f"MAE: {mae}\n")
+    # save metrics in txt file
+    #with open(metrics_path, 'w') as f:
+    #    f.write(f"pearson_corr: {pearson_corr}\n")
+    #    f.write(f"spearman_corr: {spearman_corr}\n")
+    #    f.write(f"R^2: {r2}\n")
+    #    f.write(f"MAE: {mae}\n")
 
     save_dir = f"derivatives/output_AFM_{condition}_{n_seeds}"
+    os.makedirs(save_dir, exist_ok=True)
 
     task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_{sub_id}_{condition}_{n_seeds}.npy")
     np.save(task_pred_matrix_path, taskPredMatrix)
     
-    print(taskPredMatrix.shape)
-    
-    scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
+    #scatter_plot_func(taskPredMatrix, taskActualMatrix, spearman_corr, spearman_p_val, sub_id, save_dir)
 
 if __name__ == "__main__":
 

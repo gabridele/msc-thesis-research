@@ -15,7 +15,7 @@ function resample_epi {
     
  if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 		
-  echo -e "Processing input: $input \n..."
+  echo -e "Processing input: $input... \n"
   echo -e "With mask: $mask... \n"
 		
   if [ -f "$output" ]; then

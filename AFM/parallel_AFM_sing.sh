@@ -5,18 +5,23 @@ function run_AFM_sing {
     sub_id=$(basename "$arg1" | grep -oP 'sub-\d+')
     n_seed=$(basename "$arg1" | awk -F '_' '{print $NF}' | cut -d 's' -f 1)
 
-    for wm_condition in 1500 3000 4500; do
-        # Generate arg2 paths for both low_wm and high_wm conditions
-        arg2_low="${arg1%dwi/full_association_mtrix_sub*}func/low_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
-        arg2_high="${arg1%dwi/full_association_mtrix_sub*}func/high_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
+    if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 
-        # Run your Python script with each combination of arg1 and arg2
-        echo -e "############# $sub_id, $arg1, $arg2_low" 
-        python ../code/AFM_run.py "$arg1" "$arg2_low" "$n_seed"
+        for wm_condition in 1500 3000 4500; do
 
-        echo -e "############# $sub_id, $arg1, $arg2_high"
-        python ../code/AFM_run.py "$arg1" "$arg2_high" "$n_seed"
-    done
+            # generate arg2 paths for both low_wm and high_wm conditions
+            arg2_low="${arg1%dwi/full_association_mtrix_sub*}func/low_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
+            arg2_high="${arg1%dwi/full_association_mtrix_sub*}func/high_wm_${wm_condition}_${sub_id}_ts_1vol.npy"
+
+            echo -e "############# $sub_id, $arg1, $arg2_low ######### \n" 
+            python ../code/AFM_run.py "$arg1" "$arg2_low" "$n_seed"
+
+            echo -e "############# $sub_id, $arg1, $arg2_high ######### \n"
+            python ../code/AFM_run.py "$arg1" "$arg2_high" "$n_seed"
+        done
+    else
+        echo -e "\n Subject $sub_id is excluded. Skipping..."
+    fi
 }
 
 export -f run_AFM_sing
