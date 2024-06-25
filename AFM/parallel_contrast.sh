@@ -1,5 +1,4 @@
 path_der="derivatives/"
-'derivatives/output_AFM_low_wm_3000_30.npy/taskPredMatrix_sub-10290_low_wm_3000_30.npy.npy'
 
 function get_contrast {
     p_low_1500="$1"

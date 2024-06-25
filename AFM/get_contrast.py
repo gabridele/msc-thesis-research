@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import numpy as np
 import pandas as pd # type: ignore
 import matplotlib.pyplot as plt # type: ignore
@@ -25,12 +26,12 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
     
     ## PREDICTED MATRICES
     # normalize values
-    p_low_1500 = zscore(p_low_1500)
-    p_low_3000 = zscore(p_low_3000)
-    p_low_4500 = zscore(p_low_4500)
-    p_high_1500 = zscore(p_high_1500)
-    p_high_3000 = zscore(p_high_3000)
-    p_high_4500 = zscore(p_high_4500)
+    #p_low_1500 = zscore(p_low_1500)
+    #p_low_3000 = zscore(p_low_3000)
+    #p_low_4500 = zscore(p_low_4500)
+    #p_high_1500 = zscore(p_high_1500)
+    #p_high_3000 = zscore(p_high_3000)
+    #p_high_4500 = zscore(p_high_4500)
 
     # get avg across two main conditions
     p_low_avg = (p_low_1500 + p_low_3000 + p_low_4500) / 3
@@ -48,7 +49,7 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
     # get contrast by computing low-high
     e_diff = e_low_avg - e_high_avg
     #slice to get only relevant dimension (for correlation purposes)
-    e_diff = e_diff[:, 0, 0]
+    e_diff = e_diff[:, 0]
 
     # compute metrics
     pearson_corr = pearsonr(p_diff, e_diff)
@@ -93,15 +94,14 @@ def main(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p_high_45
          e_low_1500, e_low_3000, e_low_4500, e_high_1500, e_high_3000, e_high_4500):
     
     base_name = os.path.basename(p_low_1500)
-    sub_id = base_name.split('_')[2]
-    condition = base_name.split('_low_wm_')[1].split('_')[0]
+    sub_id = re.search(r'sub-\d+', os.path.basename(p_low_1500)).group(0)
     n_seeds = base_name.split('_low_wm_')[1].split('_')[1].split('.')[0]
 
     p_diff, e_diff, pearson_corr, spearman_corr, spearman_p_val, r2, mae = avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p_high_4500, \
                                                                                         e_low_1500, e_low_3000, e_low_4500, e_high_1500, e_high_3000, e_high_4500)
 
-    os.makedirs(f'derivatives/output_AFM_{condition}_{n_seeds}', exist_ok=True)
-    save_dir = f"derivatives/output_AFM_{condition}_{n_seeds}"
+    os.makedirs(f'derivatives/output_AFM_{n_seeds}', exist_ok=True)
+    save_dir = f"derivatives/output_AFM_{n_seeds}"
 
     metrics_path = os.path.join(save_dir, f"eval_metrics_{sub_id}_{n_seeds}.txt")
 
