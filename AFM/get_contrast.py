@@ -25,13 +25,6 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
     e_high_4500 = np.load(e_high_4500)
     
     ## PREDICTED MATRICES
-    # normalize values
-    p_low_1500 = zscore(p_low_1500)
-    p_low_3000 = zscore(p_low_3000)
-    p_low_4500 = zscore(p_low_4500)
-    p_high_1500 = zscore(p_high_1500)
-    p_high_3000 = zscore(p_high_3000)
-    p_high_4500 = zscore(p_high_4500)
 
     # get avg across two main conditions
     p_low_avg = (p_low_1500 + p_low_3000 + p_low_4500) / 3
