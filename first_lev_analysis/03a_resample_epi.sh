@@ -10,7 +10,7 @@ function resample_epi {
  input="$1"
  sub_id=$(basename "$input" | cut -d'_' -f1)
  anat="${input//\/func\//\/anat\/}"
- mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
+ mask="${anat%_task-rest*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
  output="${input%.nii.gz}_resampled.nii.gz" 
     
  if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
@@ -31,7 +31,7 @@ function resample_epi {
 
 export -f resample_epi
 
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_preproc_smoothed.nii.gz' > "$path_der/input_files.txt"
+find "$path_der" -type f -name '*task-rest_bold_space-M*_preproc.nii.gz' > "$path_der/input_files.txt"
 
 N=1
 (

@@ -9,12 +9,11 @@ Created on Wed Sep 28 08:53:00 2022
 import os 
 import numpy as np
 import glob
+import re
 
 def main():
     
-    study_folder='IntraOpMap_RestingState'
-    
-    fd_files=sorted(glob.glob(os.getcwd()+'/'+study_folder+'/derivatives/CustomPrepro/Pre/sub-*/func/*fd.txt'))
+    fd_files = sorted(glob.glob(os.getcwd()+f'/derivatives/sub-*/func/*fd.txt'))
     
     # As per https://www.nature.com/articles/s41467-022-29766-8. The only difference is the FD thr. We set 0.5mm
     
