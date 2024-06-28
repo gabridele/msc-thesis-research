@@ -31,7 +31,7 @@ function regr_file {
         cut -f 1 $(basename "$csf_file") > "csf_column.tsv"
 
       # Loop thru column index of physiological noise and motion noise
-        for index in {19..24} {13..17}; do
+        for index in {13..17} {19..24}; do
             echo "Processing column $index of $sub_id"
 
             # Extract the current column to a temporary file
@@ -57,7 +57,8 @@ function regr_file {
         # Pasting the wm column, csf column, and all combined column files together into a single file
         paste wm_column.tsv csf_column.tsv temp_combined_columns_{19..24}.tsv temp_combined_columns_{13..17}.tsv > "$combined_file"
 
-
+        { head -n 1 "$combined_file"; tail -n +6 "$combined_file"; } > temp && mv temp "$combined_file"
+        
         mv "$combined_file" "../$output"
         cd ..
         rm -r temp_files

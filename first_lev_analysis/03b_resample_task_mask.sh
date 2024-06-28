@@ -7,11 +7,11 @@ echo "###################################################################"
 echo ".................Resampling mask of task with T1w brain mask..................."
 
 # 3.1 resample mask of scap task
-function resample_scap_mask { 
+function resample_task_mask { 
  input="$1"
  sub_id=$(basename "$input" | cut -d'_' -f1)
  anat="${input//\/func\//\/anat\/}"
- mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
+ mask="${anat%_task-rest*}_T1w_space-MNI152NLin2009cAsym_brainmask.nii.gz"
  output="${input%.nii.gz}_resampled.nii.gz"
 
  if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
@@ -26,19 +26,20 @@ function resample_scap_mask {
     echo "Resampled $input and saved as $output"
   fi
  else
-  echo -e "\n Subject $sub_id is excluded. Skipping..."
+  echo -e "\nSubject $sub_id is excluded. Skipping..."
  fi
 
 }
 
-export -f resample_scap_mask
-find "$path_der" -type f -name '*_task-scap_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz' > "$path_der/input_files.txt"
+export -f resample_task_mask
 
-N=1
+find "$path_der" -type f -name '*_task-rest_bold_space-MNI*_brainmask.nii.gz' > "$path_der/input_files.txt"
+
+N=2
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
-   resample_scap_mask "$ii" "$mask" & 
+   resample_task_mask "$ii" "$mask" & 
 done
 )
 
