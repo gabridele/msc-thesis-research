@@ -11,7 +11,7 @@ function mean_ts {
   input="$1"
   sub_id=$(basename "$input" | cut -d'_' -f1) 
   anat="${input//\/func\//\/anat\/}"
-  mask="${anat%_task-scap*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
+  mask="${anat%_task-rest*}_T1w_space-MNI152NLin2009cAsym_class-CSF_bin.nii.gz"
   output="${input%_bold*}_meants_CSF.tsv"
   
   total_subjects=$(grep -c "" "subject_id_with_exclusions.txt")
@@ -37,9 +37,10 @@ function mean_ts {
 }
 
 export -f mean_ts
-find "$path_der" -type f -name '*_preproc_smoothed_resampled.nii.gz' > "$path_der/input_files.txt"
+
+find "$path_der" -type f -name '*rest*MNI*_preproc_resampled.nii.gz' > "$path_der/input_files.txt"
 subjects_processed=0
-N=60
+N=80
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait

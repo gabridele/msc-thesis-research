@@ -9,34 +9,38 @@
 
 function regress_nuisance_subject {
 
-    ts=$1
+    ts="$1"
+    sub_id="$(basename "$ts" | grep -oP 'sub-\d+')"
+    sub_folder="$(dirname $ts)"
+    mask="${ts%reproc_resampled.nii.gz}_brainmask.nii.gz"
+    output="${ts%sub-*}${sub_id}__regressed_bp.nii.gz"
+    #metric_output="${ts%_preproc.nii.gz}_fd.txt"
+    
     subject=$(basename $ts _masked.nii.gz)
     sub_folder=$(dirname $ts)
     
     # EDIT passband (range of frequences to keep) and TR if needed
     3dTproject \
          -input $ts \
-         -prefix ${sub_folder}/${subject}_regressed_bp.nii.gz \
-         -censor ${sub_folder}/${subject}_censor.txt \
+         -prefix $output \
+         -censor ${sub_folder}/${sub_id}*_censor.txt \
          -cenmode NTRP \
-         -ort ${sub_folder}/${subject}_eight_regressors_plus_derivatives.txt \
+         -ort ${sub_folder}/${sub_id}_eight_regressors_plus_derivatives.txt \
          -polort 2 \
          -passband 0.01 0.1 \
-         -TR 2.6 \
-         -mask ${sub_folder}/${subject}_brain_mask.nii.gz \
+         -TR 2 \
+         -mask $mask \
          -norm \
          -verb \
-         &> ${sub_folder}/log_${subject}_nuisance_regression.txt
+         &> ${sub_folder}/log_${sub_id}_nuisance_regression.txt
                 
     }
 export -f regress_nuisance_subject
-
+#sub-10171_task-rest_bold_space-MNI152NLin2009cAsym_preproc_resampled.nii.gz
 # main code starts here
 numjobs=32
 
-study_folder=IntraOpMap_RestingState #EDIT HERE
-
-echo $PWD/${study_folder}/derivatives/CustomPrepro/Pre/sub-*/func/*_masked.nii.gz | tr " " "\n" > subject_list.txt #EDIT HERE
+echo $PWD/derivatives/sub-*/func/*task-rest_*MNI*preproc_resampled.nii.gz | tr " " "\n" > input_list.txt #EDIT HERE
 
 parallel \
     -j $numjobs \
