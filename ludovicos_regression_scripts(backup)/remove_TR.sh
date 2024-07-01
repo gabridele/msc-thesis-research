@@ -3,6 +3,7 @@ path_der="derivatives/"
 
 
 function remove_TR {
+
     num_remove="4"
     num_keep="148"
     input="$1"
@@ -13,15 +14,20 @@ function remove_TR {
 
     if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 
-        echo -e "Processing input: $sub_id \n..."
+        echo -e "Processing input: $sub_id..."
 
         fslroi $input $output_preproc $num_remove $num_keep
-
-        echo "Modified nifti file saved as: $output_preproc"
+        
+        if [ -f "$output_preproc" ]; then
+            echo "Function was successful and file saved as: "basename( "$output_preproc")""
+        else
+            echo "ERROR: output not issued"
+        fi
 
         tail -n +5 $censor_input > $censor_output
+
     else
-        echo -e "\n Subject $sub_id is excluded. Skipping..."
+        echo -e "\nSubject $sub_id is excluded. Skipping..."
     fi
 }
 
