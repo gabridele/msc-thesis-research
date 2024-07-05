@@ -34,7 +34,6 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
     p_diff = p_high_avg - p_low_avg
     #slice to get only relevant dimension (for correlation purposes)
     p_diff = p_diff[:, 0, 0]
-    p_diff = zscore(p_diff)
 
     ## EMPIRICAL MATRICES
     e_low_avg = (e_low_1500 + e_low_3000 + e_low_4500) / 3
@@ -42,9 +41,10 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
 
     # get contrast by computing low-high
     e_diff = e_high_avg - e_low_avg
+    
     #slice to get only relevant dimension (for correlation purposes)
     e_diff = e_diff[:, 0]
-    e_diff = zscore(e_diff)
+    #e_diff = zscore(e_diff) #normalize with z-score
     
     # compute metrics
     pearson_corr = pearsonr(p_diff, e_diff)

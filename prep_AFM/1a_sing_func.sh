@@ -1,4 +1,6 @@
 #!/bin/bash
+
+#script to get specific beta weights, for each condition
 path_der="derivatives/"
 
 function sing_wm {

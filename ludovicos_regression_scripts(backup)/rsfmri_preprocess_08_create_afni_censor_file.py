@@ -13,7 +13,7 @@ import re
 
 def main():
     
-    fd_files = sorted(glob.glob(os.getcwd()+f'/derivatives/sub-*/func/*fd.txt'))
+    fd_files = sorted(glob.glob(os.getcwd()+f'/derivatives/sub-*/func/*FD.txt'))
     
     # As per https://www.nature.com/articles/s41467-022-29766-8. The only difference is the FD thr. We set 0.5mm
     

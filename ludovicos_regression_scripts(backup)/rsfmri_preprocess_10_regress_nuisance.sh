@@ -12,12 +12,11 @@ function regress_nuisance_subject {
     sub_id="$(basename "$ts" | grep -oP 'sub-\d+')"
     sub_folder="$(dirname $ts)"
     regr_file="${ts%_bold*}_bold_confounds_regressors.tsv"
-    censor="${ts%_preproc*}_censor_4RTremoved.txt"
+    censor="${ts%_bold*}_censor.txt"
     mask="${ts%_preproc*}_brainmask_resampled.nii.gz"
     output="${ts%sub-*}${sub_id}_regressed_bp.nii.gz"
     
-    subject=$(basename $ts _masked.nii.gz)
-    sub_folder=$(dirname $ts)
+
     
     # EDIT passband (range of frequences to keep) and TR if needed
     3dTproject \
@@ -38,9 +37,6 @@ function regress_nuisance_subject {
 
 export -f regress_nuisance_subject
 
-# main code starts here
-
-numjobs=2
 
 find "$path_der" -type f -name '*_task-rest_bold_space-MNI*_preproc_resampled_4RTremoved.nii.gz' > "$path_der/ts_input.txt"
 

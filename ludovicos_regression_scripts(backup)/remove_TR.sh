@@ -4,27 +4,23 @@ path_der="derivatives/"
 
 function remove_TR {
 
-    num_remove="4"
-    num_keep="148"
+    t_min="4"
+    t_size="148"
     input="$1"
     sub_id=$(basename "$input" | cut -d'_' -f1)
-    censor_input="${input%_preproc*}_censor.txt"
-    censor_output="${censor_input%.txt}_${num_remove}RTremoved.txt"
-    output_preproc="${input%.nii.gz}_${num_remove}RTremoved.nii.gz"
+    output_preproc="${input%.nii.gz}_${t_min}RTremoved.nii.gz"
 
     if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 
         echo -e "Processing input: $sub_id..."
 
-        fslroi $input $output_preproc $num_remove $num_keep
+        fslroi $input $output_preproc $t_min $t_size
         
         if [ -f "$output_preproc" ]; then
-            echo "Function was successful and file saved as: "basename( "$output_preproc")""
+            echo "Function was successful and file saved as: $(basename "$output_preproc")"
         else
             echo "ERROR: output not issued"
         fi
-
-        tail -n +5 $censor_input > $censor_output
 
     else
         echo -e "\nSubject $sub_id is excluded. Skipping..."
@@ -39,7 +35,7 @@ N=80
 (
 for ii in $(cat "$path_der/input_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
-   remove_TR "$ii" "$mask" & 
+   remove_TR "$ii" & 
 done
 )
 

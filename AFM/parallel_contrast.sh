@@ -21,7 +21,7 @@ function get_contrast {
     if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
 
         echo -e "############# Processing $sub_id... \n"
-        python ../code/get_contrast.py $p_low_1500 $p_low_3000 $p_low_4500 $p_high_1500 $p_high_3000 $p_high_4500 $e_low_1500 $e_low_3000 $e_low_4500 $e_high_1500 $e_high_3000 $e_high_4500
+        python ../code/AFM/get_contrast.py $p_low_1500 $p_low_3000 $p_low_4500 $p_high_1500 $p_high_3000 $p_high_4500 $e_low_1500 $e_low_3000 $e_low_4500 $e_high_1500 $e_high_3000 $e_high_4500
         
     else
         echo -e "\n Subject $sub_id is excluded. Skipping..."
