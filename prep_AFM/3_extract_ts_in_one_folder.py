@@ -33,7 +33,7 @@ def main():
 
     out_dir = os.path.join(os.getcwd(), 'derivatives')
 
-    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', '*_2vol_ts.nii.gz')
+    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', 'sub-*_scap_decon_outputs', '*_2vol_ts.nii.gz')
 
     subjects = sorted(glob.glob(single_files))
 
