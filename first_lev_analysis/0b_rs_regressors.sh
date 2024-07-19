@@ -8,7 +8,7 @@ echo ".....................Processing motion regressors....................."
 
 function regr_file {
     input="$1"
-    csf_file="${input%_bold*}_meants_CSF.tsv"
+    #csf_file="${input%_bold*}_meants_CSF.tsv"
     sub_id=$(basename "$input" | cut -d'_' -f1)
     input=$(basename "$input")
     output="${input%.tsv}_regressors.tsv"
@@ -19,19 +19,20 @@ function regr_file {
         mkdir temp_files
 
         cp $(basename "$input") temp_files/
-        cp $(basename "$csf_file") temp_files/
+        #cp $(basename "$csf_file") temp_files/
         cd temp_files
 
         combined_file="combined_columns.tsv"
 
         # Extract wm column from the input file
-        cut -f 1 $(basename "$input") > "wm_column.tsv"
+        #cut -f 1 $(basename "$input") > "wm_column.tsv"
 
         # Extract column from meanTS csf file
-        cut -f 1 $(basename "$csf_file") > "csf_column.tsv"
+        #cut -f 1 $(basename "$csf_file") > "csf_column.tsv"
 
       # Loop thru column index of physiological noise and motion noise
-        for index in {19..24}; do
+
+        for index in {13..17} {19..24}; do
             echo "Processing column $index of $sub_id"
 
             # Extract the current column to a temporary file
@@ -55,8 +56,9 @@ function regr_file {
         done
 
         # Pasting the wm column, csf column, and all combined column files together into a single file
-        paste wm_column.tsv csf_column.tsv temp_combined_columns_{19..24}.tsv > "$combined_file"
+        #paste wm_column.tsv csf_column.tsv temp_combined_columns_{19..24}.tsv > "$combined_file"
 
+        # remove first 4 values and header, as I removed first 4 TRs from nifti files 
         { head -n 1 "$combined_file"; tail -n +6 "$combined_file"; } > temp && mv temp "$combined_file"
         
         mv "$combined_file" "../$output"
