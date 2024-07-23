@@ -7,12 +7,12 @@ function resample_func {
     template="derivatives/templates/Schaefer2018_400Parcels_Tian_Subcortex_S4_2mm_2009c_NLinAsymm.nii.gz"
     sub_id=$(basename "$input" | cut -d'_' -f1)
 
-    3dresample -master "$template" -prefix "$path_dl/${sub_id}/scap.feat/${sub_id}_mean_zstat_resampled.nii.gz" -input "$path_dl/${sub_id}/scap.feat/${sub_id}_mean_zstat.nii.gz"
+    3dresample -master "$template" -prefix "$path_dl/${sub_id}/scap.feat/${sub_id}_mean_cope_resampled.nii.gz" -input "$path_dl/${sub_id}/scap.feat/${sub_id}_mean_cope.nii.gz"
 }
 
 export -f resample_func
 
-find "$path_dl" -type f -name '*mean_zstat.nii.gz' > "$path_dl/input_files.txt"
+find "$path_dl" -type f -name '*mean_cope.nii.gz' > "$path_dl/input_files.txt"
 
 N=2
 (
