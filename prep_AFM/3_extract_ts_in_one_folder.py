@@ -16,13 +16,13 @@ def extract_ts(subject_name):
     )
 
     ts = ts.T
+    ts = ts[:, :1]
     
-    correlation_matrix = np.corrcoef(ts)
-    
-    np.fill_diagonal(correlation_matrix, 0)
-    
-    output_path = os.path.join(out_dir, sub_id, 'func', sub_id + 'correlation_matrix.npy')
-    np.save(output_path, correlation_matrix)
+    sub_name_no_ending = os.path.basename(subject_name).rsplit('.', 2)[0]
+    sub_name_no_2vol = sub_name_no_ending.replace('_2vol', '')
+
+    output_path = os.path.join(out_dir, sub_id, 'func', sub_name_no_2vol + '_1vol.npy')
+    np.save(output_path, ts)
 
 def main():
     
