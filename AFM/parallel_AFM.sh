@@ -1,9 +1,10 @@
 path_der="derivatives/"
-
+path_dl="derivatives/preproc_dl"
+sub-10189_mean_cope_resampled_ts_1vol.npy
 function run_AFM {
     arg1="$1"
     sub_id=$(basename "$arg1" | grep -oP 'sub-\d+')
-    arg2="${arg1%dwi/full_association_mtrix_sub*}func/low_wm_*_${sub_id}_ts_1vol.npy"
+    arg2="$path_dl/${sub_id}/scap.feat/${sub_id}_mean_cope_resampled_ts_1vol.npy"
 
     echo -e "############# $sub_id, $arg1, $arg2"
 
