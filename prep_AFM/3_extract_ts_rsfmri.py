@@ -1,6 +1,7 @@
 from nilearn import image, regions # type: ignore
 import numpy as np
 import os
+from scipy import stats
 import glob
 from multiprocessing import Pool
 
@@ -17,7 +18,7 @@ def extract_ts(subject_name):
 
     ts = ts.T
     
-    correlation_matrix = np.corrcoef(ts)
+    correlation_matrix = stats.spearmanr(ts)
     
     np.fill_diagonal(correlation_matrix, 0)
     
