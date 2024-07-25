@@ -18,7 +18,7 @@ def extract_ts(subject_name):
 
     ts = ts.T
 
-    correlation_result = np.corrcoef(ts)
+    correlation_matrix = np.corrcocef(ts)
 
     # Set the diagonal to NaN
     np.fill_diagonal(correlation_matrix, 0)
