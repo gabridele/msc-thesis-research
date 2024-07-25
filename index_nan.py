@@ -27,10 +27,15 @@ def process_csv(file_path):
 # Function to count NaN rows and record indices from an NPY file
 def process_npy(file_path):
     data = np.load(file_path)
+    
+    # Check if data is a 2D array
+    if len(data.shape) != 2:
+        raise ValueError("The NPY file does not contain a 2D array.")
+    
     # Convert to DataFrame
     df = pd.DataFrame(data)
     
-    # Detect rows with any NaNs
+    # Detect rows with NaNs
     nan_positions = {}
     for index, row in df.iterrows():
         nan_cols = [col for col in df.columns if pd.isna(row[col])]
@@ -39,6 +44,7 @@ def process_npy(file_path):
     
     # Count NaN rows
     fc_nan_count = len(nan_positions)
+    
     # Prepare formatted NaN positions for output
     formatted_nan_positions = {index: ', '.join(map(str, cols)) for index, cols in nan_positions.items()}
     
