@@ -37,7 +37,7 @@ def process_npy(file_path):
     df = pd.DataFrame(data)
 
     
-    # Detect nans
+    # Detect rows with any NaNs
     nan_row_indices = df.index[df.isna().any(axis=1)].tolist()
     # Detect rows with all zero values
     zero_row_indices = df.index[(df == 0).all(axis=1)].tolist()
@@ -59,7 +59,7 @@ for file_path_y in file_paths_y:
     dwi_count, dwi_indices = process_csv(file_path_y)
     
     # Find corresponding z file path using the same subject_id
-    file_path_z = next((path for path in file_paths_z if subject_id in path), None)
+    file_path_z = f"derivatives/{subject_id}/func/{subject_id}_rs_correlation_matrix.npy"
     if file_path_z:
         nan_row_indices, zero_row_indices = process_npy(file_path_z)
         fc_nan_count = len(nan_row_indices)
