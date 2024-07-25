@@ -29,7 +29,6 @@ def process_npy(file_path):
     data = np.load(file_path)
     # Convert to DataFrame
     df = pd.DataFrame(data)
-
     
     # Detect rows with any NaNs
     nan_row_indices = df.index[df.isna().any(axis=1)].tolist()
@@ -54,13 +53,20 @@ for file_path_y in file_paths_y:
     
     # Find corresponding z file path using the same subject_id
     file_path_z = f"derivatives/{subject_id}/func/{subject_id}_rs_correlation_matrix.npy"
-    if file_path_z:
+    if os.path.exists(file_path_z):
         nan_row_indices, zero_row_indices = process_npy(file_path_z)
         fc_nan_count = len(nan_row_indices)
     else:
-        print(file_path_z, "file not found")
+        print(f"File not found: {file_path_z}")
+        fc_nan_count, nan_row_indices, zero_row_indices = 0, [], []
 
     data.append([subject_id, dwi_count, dwi_indices, fc_nan_count, nan_row_indices, zero_row_indices])
+
+    # Debug print statement
+    print(f"Subject ID: {subject_id}")
+    print(f"DWI count: {dwi_count}, DWI indices: {dwi_indices}")
+    print(f"FC NaN count: {fc_nan_count}, FC NaN indices: {nan_row_indices}")
+    print(f"FC Zero indices: {zero_row_indices}")
 
 # Sort data by subject ID
 data.sort(key=lambda x: x[0])
