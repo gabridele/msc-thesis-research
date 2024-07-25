@@ -1,24 +1,26 @@
 #!/bin/bash
 
-base_dir="derivatives/preproc_dl"
+base_dir="ddl"
 
 # Loop through each subject directory
-for subject_dir in "$base_dir"/sub-*/scap.feat/stats; do
+find "$base_dir" -type d -path "*/sub-*/scap.feat/stats" | while read -r subject_dir; do
     # Extract the subject ID
-    subject_id=$(basename $(dirname $(dirname "$subject_dir")))
+    subject_id=$(basename "$(dirname "$(dirname "$subject_dir")")")
+   
+    # Path to the specific cope27.nii.gz file
+    cope_file="$subject_dir/cope31.nii.gz"
 
-    # Path to the specific zstat29.nii.gz file
-    zstat_file="$subject_dir/zstat27.nii.gz"
-
+    echo "$cope_file"
     # Check if the file exists
-    if [ -f "$zstat_file" ]; then
+    if [ -f "$cope_file" ]; then
         # Construct the new filename by adding the subject ID at the beginning
-        new_filename="${subject_dir}/${subject_id}_zstat27.nii.gz"
+        new_filename="${subject_dir}/${subject_id}_cope31.nii.gz"
         
         # Rename the file
-        mv "$zstat_file" "$new_filename"
+        mv "$cope_file" "$new_filename"
         
         # Output the new filename
-        echo "Renamed $zstat_file to $new_filename"
+        echo "Renamed $cope_file to $new_filename"
+    
     fi
 done

@@ -29,15 +29,15 @@ def main():
     global path_to_atlas
     global out_dir
 
-    path_to_atlas = os.path.join(os.getcwd(), 'derivatives', 'templates', 'Schaefer2018_400Parcels_Tian_Subcortex_S4_1mm_2009c_NLinAsymm.nii.gz')
+    path_to_atlas = os.path.join(os.getcwd(), 'derivatives', 'templates', 'Schaefer2018_400Parcels_Tian_Subcortex_S4_2mm_2009c_NLinAsymm.nii.gz')
 
     out_dir = os.path.join(os.getcwd(), 'derivatives')
-
-    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', 'sub-*_scap_decon_outputs', '*_2vol_ts.nii.gz')
+   
+    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', 'sub-*_regressed_smoothed_resampled.nii.gz')
 
     subjects = sorted(glob.glob(single_files))
 
-    with Pool(processes=80) as pool:
+    with Pool(processes=140) as pool:
         pool.map(extract_ts, subjects)
 
 if __name__ == '__main__':

@@ -8,12 +8,12 @@ from scipy.stats import zscore
 def activity_flow_conn(conn_array, func_array):
     
     taskActMatrix = func_array #shape parcel x timeseries x subj
-    connMatrix = conn_array # shape parcel x parcel x state x subj
+    rsMatrix = conn_array # shape parcel x parcel x state x subj
 
     numTasks = taskActMatrix.shape[1]
     numRegions = taskActMatrix.shape[0]
-    numConnStates = connMatrix.shape[2]
-    numSubjs = connMatrix.shape[3]
+    numConnStates = rsMatrix.shape[2]
+    numSubjs = rsMatrix.shape[3]
 
     # Setup for prediction
     taskPredMatrix = np.zeros((numRegions, numTasks, numSubjs))
@@ -33,10 +33,10 @@ def activity_flow_conn(conn_array, func_array):
 
                 # Get this region's connectivity pattern
                 if numConnStates > 1:
-                    stateFCVect = connMatrix[:, regionNum, taskNum, subjNum]
+                    stateFCVect = rsMatrix[:, regionNum, taskNum, subjNum]
                 else:
                     # If using resting-state (or any single state) data
-                    stateFCVect = connMatrix[:, regionNum, 0, subjNum]
+                    stateFCVect = rsMatrix[:, regionNum, 0, subjNum]
 
                 # Calculate activity flow prediction
                 taskPredMatrix[regionNum, taskNum, subjNum] = np.sum(taskActVect[otherRegions] * stateFCVect[otherRegions])
@@ -47,7 +47,7 @@ def activity_flow_conn(conn_array, func_array):
 
     return taskPredMatrix
 
-def main(input_conn, input_func, n_seeds):
+def main(input_conn, input_func):
 
     sub_id = input_conn.split('/')[-3]
     print(sub_id)
@@ -66,12 +66,12 @@ def main(input_conn, input_func, n_seeds):
     
     taskPredMatrix = activity_flow_conn(conn_array, func_array)
     
-    os.makedirs(f'derivatives/preproc_dl/output_AFM_{n_seeds}', exist_ok=True)
+    os.makedirs(f'derivatives/output_AFM_rs', exist_ok=True)
 
-    save_dir = f"derivatives/preproc_dl/output_AFM_{n_seeds}"
+    save_dir = f"derivatives/output_AFM_rs"
     os.makedirs(save_dir, exist_ok=True)
 
-    task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_{sub_id}_{n_seeds}.npy")
+    task_pred_matrix_path = os.path.join(save_dir, f"taskPredMatrix_rs_{sub_id}.npy")
     np.save(task_pred_matrix_path, taskPredMatrix)
 
 
@@ -79,6 +79,5 @@ if __name__ == "__main__":
 
     input_conn = sys.argv[1]
     input_func = sys.argv[2]
-    n_seeds = sys.argv[3] # to put right name when saving
 
-    main(input_conn, input_func, n_seeds)
+    main(input_conn, input_func)

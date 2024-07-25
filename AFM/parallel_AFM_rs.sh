@@ -14,13 +14,13 @@ function run_AFM {
 
 export -f run_AFM
 
-find "$path_der" -type f -name 'restored_full_association_matrix_*.csv' > "$path_der/ass_mtrx_files.txt"
+find "$path_der" -type f -name '*_rs_correlation_matrix.npy' > "$path_der/rs_mtrx_files.txt"
 
 N=140
 (
-for ii in $(cat "$path_der/ass_mtrx_files.txt"); do 
+for ii in $(cat "$path_der/rs_mtrx_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
    run_AFM "$ii" &
 done
 )
-rm "$path_der/ass_mtrx_files.txt"
+rm "$path_der/rs_mtrx_files.txt"
