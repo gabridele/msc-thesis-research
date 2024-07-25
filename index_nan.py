@@ -24,7 +24,7 @@ def process_csv(file_path):
     
     return count, all_indices
 
-# Function to count NaN rows and record indices from an NPY file
+# Function to count NaN rows and record unique indices from an NPY file
 def process_npy(file_path):
     data = np.load(file_path)
     
@@ -35,18 +35,22 @@ def process_npy(file_path):
     # Convert to DataFrame
     df = pd.DataFrame(data)
     
-    # Detect rows with NaNs
-    nan_positions = {}
+    # Detect rows and columns with NaNs
+    nan_row_indices = set()
+    nan_col_indices = set()
     for index, row in df.iterrows():
-        nan_cols = [col for col in df.columns if pd.isna(row[col])]
-        if nan_cols:
-            nan_positions[index] = nan_cols
+        if row.isna().any():
+            nan_row_indices.add(index)
+            nan_col_indices.update(df.columns[row.isna()].tolist())
     
     # Count NaN rows
-    fc_nan_count = len(nan_positions)
+    fc_nan_count = len(nan_row_indices)
     
     # Prepare formatted NaN positions for output
-    formatted_nan_positions = {index: ', '.join(map(str, cols)) for index, cols in nan_positions.items()}
+    formatted_nan_positions = {
+        "rows": sorted(nan_row_indices),
+        "columns": sorted(nan_col_indices)
+    }
     
     return fc_nan_count, formatted_nan_positions
 
@@ -70,12 +74,14 @@ for file_path_y in file_paths_y:
         fc_nan_count, formatted_nan_positions = process_npy(file_path_z)
     else:
         print(f"File not found: {file_path_z}")
-        formatted_nan_positions = {}
+        formatted_nan_positions = {"rows": [], "columns": []}
         fc_nan_count = 0
 
     # Prepare formatted data for output
     formatted_dwi_indices = ', '.join(map(str, dwi_indices))
-    formatted_nan_positions_str = '; '.join([f"Row {key}: Columns {value}" for key, value in formatted_nan_positions.items()])
+    formatted_nan_rows = ', '.join(map(str, formatted_nan_positions["rows"]))
+    formatted_nan_columns = ', '.join(map(str, formatted_nan_positions["columns"]))
+    formatted_nan_positions_str = f"Rows: {formatted_nan_rows}; Columns: {formatted_nan_columns}"
     
     data.append([subject_id, dwi_count, formatted_dwi_indices, fc_nan_count, formatted_nan_positions_str])
 
