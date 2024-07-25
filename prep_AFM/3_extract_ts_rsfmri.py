@@ -18,8 +18,12 @@ def extract_ts(subject_name):
 
     ts = ts.T
     ts[ts == 0] = np.nan
-    correlation_matrix = stats.spearmanr(ts)
+    correlation_result = stats.spearmanr(ts)
     
+    # Extract the correlation matrix from the SignificanceResult object
+    correlation_matrix = correlation_result.correlation
+
+    # Set the diagonal to NaN
     np.fill_diagonal(correlation_matrix, 0)
     
     output_path = os.path.join(out_dir, sub_id, 'func', sub_id + '_rs_correlation_matrix.npy')
@@ -38,7 +42,7 @@ def main():
 
     subjects = sorted(glob.glob(single_files))
 
-    with Pool(processes=140) as pool:
+    with Pool(processes = 140) as pool:
         pool.map(extract_ts, subjects)
 
 if __name__ == '__main__':
