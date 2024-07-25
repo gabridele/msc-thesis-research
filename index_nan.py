@@ -31,9 +31,13 @@ def process_npy(file_path):
     df = pd.DataFrame(data)
     
     # Detect rows with any NaNs
-    nan_row_indices = df.index[df.isna().any(axis=1)].tolist()
+    nan_positions = {}
+    for index, row in df.iterrows():
+        nan_cols = [col for col in df.columns if pd.isna(row[col])]
+        if nan_cols:
+            nan_positions[index] = nan_cols
     
-    return nan_row_indices
+    return nan_positions
 
 # Prepare data for CSV
 data = []
@@ -52,18 +56,29 @@ for file_path_y in file_paths_y:
     # Find corresponding z file path using the same subject_id
     file_path_z = f"derivatives/{subject_id}/func/{subject_id}_rs_correlation_matrix.npy"
     if os.path.exists(file_path_z):
-        nan_row_indices = process_npy(file_path_z)
-        print(nan_row_indices)
-        fc_nan_count = len(nan_row_indices)
+        nan_positions = process_npy(file_path_z)
+        # Format the NaN positions as strings
+        formatted_nan_positions = {index: ', '.join(map(str, cols)) for index, cols in nan_positions.items()}
+        fc_nan_count = len(nan_positions)
     else:
         print(f"File not found: {file_path_z}")
-        fc_nan_count, nan_row_indices = 0, []
+        formatted_nan_positions = {}
+        fc_nan_count = 0
 
-    data.append([subject_id, dwi_count, dwi_indices, fc_nan_count, nan_row_indices])
+    data.append([subject_id, dwi_count, dwi_indices, fc_nan_count, formatted_nan_positions])
 
 # Sort data by subject ID
 data.sort(key=lambda x: x[0])
 
 # Create a DataFrame and save to Excel
 df = pd.DataFrame(data, columns=['subject', 'dwi_count', 'dwi_indices', 'fc_nan_count', 'fc_nan_indices'])
+
+# Expand the dictionary of NaN positions into separate columns
+df_fc_nan_positions = pd.DataFrame(df['fc_nan_indices'].apply(lambda x: dict(eval(x))).tolist()).fillna('')
+df = df.join(df_fc_nan_positions)
+
+# Drop the original dictionary column
+df = df.drop(columns=['fc_nan_indices'])
+
+# Save to Excel
 df.to_excel('output.xlsx', index=False)
