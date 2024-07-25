@@ -73,12 +73,9 @@ data.sort(key=lambda x: x[0])
 # Create a DataFrame and save to Excel
 df = pd.DataFrame(data, columns=['subject', 'dwi_count', 'dwi_indices', 'fc_nan_count', 'fc_nan_indices'])
 
-# Expand the dictionary of NaN positions into separate columns
-df_fc_nan_positions = pd.DataFrame(df['fc_nan_indices'].apply(lambda x: dict(eval(x))).tolist()).fillna('')
-df = df.join(df_fc_nan_positions)
-
-# Drop the original dictionary column
-df = df.drop(columns=['fc_nan_indices'])
+# Convert the dictionary of NaN positions into separate columns
+df_fc_nan_positions = pd.json_normalize(df['fc_nan_indices'])
+df = pd.concat([df.drop(columns=['fc_nan_indices']), df_fc_nan_positions], axis=1)
 
 # Save to Excel
 df.to_excel('output.xlsx', index=False)
