@@ -25,7 +25,7 @@ def extract_ts(subject_name):
 
     # Set the diagonal to NaN
     np.fill_diagonal(correlation_matrix, 0)
-    
+    correlation_matrix[correlation_matrix == np.nan] = 0
     output_path = os.path.join(out_dir, sub_id, 'func', sub_id + '_rs_correlation_matrix.npy')
     np.save(output_path, correlation_matrix)
 
