@@ -35,19 +35,12 @@ def process_npy(file_path):
     data = np.load(file_path)
     # Convert to DataFrame
     df = pd.DataFrame(data)
+
     
-    # Debug print statement
-    print(f"Processing NPY: {file_path}")
-    print(f"Data shape: {df.shape}")
-    
-    # Detect NaNs
+    # Detect nans
     nan_row_indices = df.index[df.isna().any(axis=1)].tolist()
     # Detect rows with all zero values
     zero_row_indices = df.index[(df == 0).all(axis=1)].tolist()
-    
-    # More debug print statements
-    print(f"NaN row indices: {nan_row_indices}")
-    print(f"Zero row indices: {zero_row_indices}")
     
     return nan_row_indices, zero_row_indices
 
