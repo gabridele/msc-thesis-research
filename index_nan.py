@@ -37,7 +37,12 @@ def process_npy(file_path):
         if nan_cols:
             nan_positions[index] = nan_cols
     
-    return nan_positions
+    # Count NaN rows
+    fc_nan_count = len(nan_positions)
+    # Prepare formatted NaN positions for output
+    formatted_nan_positions = {index: ', '.join(map(str, cols)) for index, cols in nan_positions.items()}
+    
+    return fc_nan_count, formatted_nan_positions
 
 # Prepare data for CSV
 data = []
@@ -56,26 +61,23 @@ for file_path_y in file_paths_y:
     # Find corresponding z file path using the same subject_id
     file_path_z = f"derivatives/{subject_id}/func/{subject_id}_rs_correlation_matrix.npy"
     if os.path.exists(file_path_z):
-        nan_positions = process_npy(file_path_z)
-        # Format the NaN positions as strings
-        formatted_nan_positions = {index: ', '.join(map(str, cols)) for index, cols in nan_positions.items()}
-        fc_nan_count = len(nan_positions)
+        fc_nan_count, formatted_nan_positions = process_npy(file_path_z)
     else:
         print(f"File not found: {file_path_z}")
         formatted_nan_positions = {}
         fc_nan_count = 0
 
-    data.append([subject_id, dwi_count, dwi_indices, fc_nan_count, formatted_nan_positions])
+    # Prepare formatted data for output
+    formatted_dwi_indices = ', '.join(map(str, dwi_indices))
+    formatted_nan_positions_str = '; '.join([f"Row {key}: Columns {value}" for key, value in formatted_nan_positions.items()])
+    
+    data.append([subject_id, dwi_count, formatted_dwi_indices, fc_nan_count, formatted_nan_positions_str])
 
 # Sort data by subject ID
 data.sort(key=lambda x: x[0])
 
 # Create a DataFrame and save to Excel
 df = pd.DataFrame(data, columns=['subject', 'dwi_count', 'dwi_indices', 'fc_nan_count', 'fc_nan_indices'])
-
-# Convert the dictionary of NaN positions into separate columns
-df_fc_nan_positions = pd.json_normalize(df['fc_nan_indices'])
-df = pd.concat([df.drop(columns=['fc_nan_indices']), df_fc_nan_positions], axis=1)
 
 # Save to Excel
 df.to_excel('output.xlsx', index=False)
