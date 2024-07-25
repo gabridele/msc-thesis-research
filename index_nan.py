@@ -22,12 +22,6 @@ def process_csv(file_path):
     all_indices = list(set(zero_row_indices + low_non_zero_indices))
     count = len(all_indices)
     
-    # Debug print statements
-    print(f"Processing CSV: {file_path}")
-    print(f"Zero row indices: {zero_row_indices}")
-    print(f"Low non-zero indices: {low_non_zero_indices}")
-    print(f"Total count: {count}, All indices: {all_indices}")
-    
     return count, all_indices
 
 # Function to count NaN rows and record indices from an NPY file
@@ -64,16 +58,9 @@ for file_path_y in file_paths_y:
         nan_row_indices, zero_row_indices = process_npy(file_path_z)
         fc_nan_count = len(nan_row_indices)
     else:
-        fc_nan_count, nan_row_indices = 0, []
-        zero_row_indices = []
+        print(file_path_z, "file not found")
 
     data.append([subject_id, dwi_count, dwi_indices, fc_nan_count, nan_row_indices, zero_row_indices])
-
-    # Debug print statement
-    print(f"Subject ID: {subject_id}")
-    print(f"DWI count: {dwi_count}, DWI indices: {dwi_indices}")
-    print(f"FC NaN count: {fc_nan_count}, FC NaN indices: {nan_row_indices}")
-    print(f"FC Zero indices: {zero_row_indices}")
 
 # Sort data by subject ID
 data.sort(key=lambda x: x[0])
