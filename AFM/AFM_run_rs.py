@@ -56,7 +56,8 @@ def main(input_conn, input_func):
     #condition = base_name.split('_sub')[0]
 
     conn_array = pd.read_csv(input_conn, delimiter=',', header=None, dtype=float).to_numpy()
-    func_array = np.load(input_func)
+
+    func_array = pd.read_csv(input_conn, delimiter=',', header=None, dtype=float).to_numpy()
 
     #func_array = np.expand_dims(func_array, axis=1)
     func_array = np.expand_dims(func_array, axis=2)
