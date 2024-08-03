@@ -1,8 +1,12 @@
+import pandas as pd
+#from dipy.io.streamline import load_tractogram, save_tck
+#from dipy.io.stateful_tractogram import Space, StatefulTractogram
+import numpy as np
 import glob
 import re
 import os
-from dipy.io.streamline import load_tractogram
-from dipy.tracking.streamline import ArraySequence
+from nibabel.streamlines.array_sequence import ArraySequence # type: ignore
+from multiprocessing import Pool
 
 def find(directory):
     # Regular expression to match *roi*.txt but not *roi*only_comm.txt
@@ -63,8 +67,11 @@ def filter_sub(sub):
 
 # Example usage:
 # Replace 'path/to/subject/folder' with the actual path to the subject's folder
+def main():
+    subject_folder = find(os.getcwd())
+    for sub in subject_folder:
+        n_streams = filter_sub(sub)
+    print(n_streams)
 
-subject_folder = find(os.getcwd())
-for sub in subject_folder:
-    n_streams = filter_sub(sub)
-print(n_streams)
+if __name__ == "__main__":
+        main() 
