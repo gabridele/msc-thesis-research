@@ -70,8 +70,8 @@ def filter_sub(sub):
 def main():
     subject_folder = find(os.getcwd())
     for sub in subject_folder:
-        n_streams = filter_sub(sub)
-    print(n_streams)
+        filter_sub(sub)
+    #print(n_streams)
 
 if __name__ == "__main__":
         main() 
