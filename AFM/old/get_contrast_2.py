@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd # type: ignore
 import matplotlib.pyplot as plt # type: ignore
-from scipy.stats import spearmanr, zscore, pearsonr # type: ignore
+from scipy.stats import spearmanr, pearsonr # type: ignore
 from sklearn.metrics import r2_score, mean_absolute_error # type: ignore
 
 def avg_contrast(p_array, e_array):
@@ -67,8 +67,8 @@ def main(p_array, e_array):
 
     p_array, e_array, pearson_corr, spearman_corr, spearman_p_val, r2, mae = avg_contrast(p_array, e_array)
 
-    os.makedirs(f'derivatives/preproc_dl/output_AFM_{n_seeds}', exist_ok=True)
-    save_dir = f"derivatives/preproc_dl/output_AFM_{n_seeds}"
+    os.makedirs(f'derivatives/output_AFM_{n_seeds}', exist_ok=True)
+    save_dir = f"derivatives/output_AFM_{n_seeds}"
 
     metrics_path = os.path.join(save_dir, f"eval_metrics_{sub_id}_{n_seeds}.txt")
 

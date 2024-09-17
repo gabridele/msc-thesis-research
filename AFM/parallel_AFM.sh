@@ -1,22 +1,28 @@
-path_der="derivatives/"
-path_dl="derivatives/preproc_dl"
+path_der="derivatives"
+path_dl="preproc_dl"
 
 function run_AFM {
     arg1="$1"
     sub_id=$(basename "$arg1" | grep -oP 'sub-\d+')
-    arg2="$path_dl/${sub_id}/scap.feat/${sub_id}_mean_cope_resampled_ts_1vol.npy"
+    arg2="$path_der/${sub_id}/func/processed_${sub_id}_mean_cope_resampled_ts_1vol.npy"
     n_seed=$(basename "$arg1" | awk -F '_' '{print $NF}' | cut -d 's' -f 1)
 
-    echo -e "############# $sub_id, $arg1, $arg2"
+    if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
+    
+        echo -e "############# $sub_id, $arg1, $arg2, $n_seed"
 
-    python ../code/AFM/AFM_run.py $arg1 $arg2 $n_seed
+        python ../code/AFM/AFM_run.py $arg1 $arg2 $n_seed
+    else
+        echo -e "\n Subject $sub_id is excluded. Skipping..."
+    fi
 }
 
 export -f run_AFM
 
-find "$path_der" -type f -name 'restored_full_association_matrix_*.csv' > "$path_der/ass_mtrx_files.txt"
+find "$path_der" -type f -name 'processed_association_matrix_*.csv' > "$path_der/ass_mtrx_files.txt"
+sort "$path_der/ass_mtrx_files.txt" -o "$path_der/ass_mtrx_files.txt"
 
-N=140
+N=144
 (
 for ii in $(cat "$path_der/ass_mtrx_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait

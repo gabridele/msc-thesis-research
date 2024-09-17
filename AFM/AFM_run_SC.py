@@ -49,7 +49,6 @@ def activity_flow_conn(conn_array, func_array):
 
     return taskPredMatrix
 
-# Function to load union indices for a specific subject from Excel file
 def load_union_indices(subject, union_file):
     df = pd.read_excel(union_file)
     row = df.loc[df['subject'] == subject]
@@ -60,37 +59,6 @@ def load_union_indices(subject, union_file):
         return list(map(int, union_indices.split(', ')))
     else:
         raise ValueError(f"Subject {subject} not found in {union_file}.")
-    
-def restore_matrix(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.DataFrame:
-    """
-    Add use cases.
-
-    Arguments:
-        `data`: a pandas DataFrame, a square matrix
-        `cols_and_rows_to_insert`: a list of integers, the indexes of the columns and rows to insert
-
-    Returns:
-        the dataframe with zero columns on the given indexes and zero rows on the given indexes.
-    """
-    if data.shape[0] != data.shape[1]:
-        raise ValueError("The input matrix should be squared")
-
-    for col_index in cols_and_rows_to_insert:
-        adjusted_index = col_index
-        data.insert(loc=adjusted_index, column=f"zero_col_{col_index}", value=0)
-
-    for row_index in cols_and_rows_to_insert:
-        adjusted_index = row_index
-        zero_row = pd.DataFrame([[0] * data.shape[1]], columns=data.columns)
-        data_top = data.iloc[:adjusted_index, :]
-        data_bottom = data.iloc[adjusted_index:, :]
-        data = pd.concat([data_top, zero_row, data_bottom], ignore_index=True)
-
-    # This can be commented out if you are direclty saving the data to a file
-    data.reset_index(drop=True, inplace=True)
-    data.columns = range(data.shape[1])
-
-    return data
 
 def restore_array(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.DataFrame:
     """
@@ -123,17 +91,6 @@ def restore_array(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.
 
     return data
 
-# 1. Restore rows and columns in SC and AW
-def restore_sc_matrix(subject, mod_csv_file, union_file):
-    union_indices = load_union_indices(subject, union_file)
-    print(union_indices)
-
-    matrix = pd.DataFrame(mod_csv_file)
-
-    restored_matrix = restore_matrix(matrix, union_indices)
-
-    return restored_matrix
-
 def restore_task_matrix(subject, mod_task_file, union_file):
     union_indices = load_union_indices(subject, union_file)
 
@@ -143,7 +100,7 @@ def restore_task_matrix(subject, mod_task_file, union_file):
 
     return restored_array
 
-def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=None, save_dir=None, n_seeds=None):
+def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=None, save_dir=None):
     
     # make sure value is of float type
     spearman_corr = float(spearman_corr)
@@ -156,7 +113,7 @@ def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=No
     plt.scatter(range(len(pred_values)), pred_values, color='lightblue', label='Predicted Activation')
     plt.scatter(range(len(actual_values)), actual_values, color='lightcoral', label='Empirical Activation')
 
-    plt.title(f'Predicted vs Empirical Activation for {sub_id} - {n_seeds}-seeds association matrix based' if sub_id else f'Predicted vs Empirical Activation - {n_seeds}-seeds association matrix based')
+    plt.title(f'Predicted vs Empirical Activation for {sub_id} - SC matrix based' if sub_id else f'Predicted vs Empirical Activation - SC matrix based')
     plt.xlabel('Region')
     plt.ylabel('Activation')
 
@@ -175,7 +132,7 @@ def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=No
     
     return
     
-def main(input_conn, input_func, n_seeds):
+def main(input_conn, input_func):
     
     base_name = os.path.basename(input_conn)
     sub_id = re.search(r'sub-\d+', base_name).group(0)
@@ -193,21 +150,17 @@ def main(input_conn, input_func, n_seeds):
 
     taskPredMatrix = activity_flow_conn(conn_array, func_array)
     
-    save_dir = f'derivatives/output_AFM_{n_seeds}'
+    save_dir = f'derivatives/output_AFM_SC'
 
     restored_sc_matrix = restore_task_matrix(sub_id, taskPredMatrix[:, 0,], union_file)
     restored_func = restore_task_matrix(sub_id, func_array[:, 0,], union_file)
 
     os.makedirs(save_dir, exist_ok=True)
-    restored_sc_matrix.to_csv(f"{save_dir}/restored_taskPredMatrix_{sub_id}_{n_seeds}.csv", index=False, header=False)
-
-    restored_func.to_csv(f"derivatives/{sub_id}/func/restored_{sub_id}_mean_cope_resampled_ts_1vol.csv", index=False, header=False)
-    #restored_sc_matrix = restored_sc_matrix[:, 0]
-    #print(type(restored_sc_matrix))
+    restored_sc_matrix.to_csv(f"{save_dir}/restored_taskPredMatrix_{sub_id}_rs.csv", index=False, header=False)
 
     p_array = restored_sc_matrix.squeeze().to_numpy()
     e_array = restored_func.squeeze().to_numpy()
-    
+
     print("p_array.shape", p_array.shape)
     print("e_array.shape", e_array.shape)
     
@@ -218,18 +171,17 @@ def main(input_conn, input_func, n_seeds):
     mae = mean_absolute_error(e_array, p_array)
     
     # Save metrics in txt file
-    metrics_path = os.path.join(save_dir, f"eval_metrics_{sub_id}_{n_seeds}.txt")
+    metrics_path = os.path.join(save_dir, f"eval_metrics_{sub_id}_SC.txt")
     with open(metrics_path, 'w') as f:
         f.write(f"pearson_corr: {pearson_corr}\n")
         f.write(f"spearman_corr: {spearman_corr}, pvalue: {spearman_p_val}\n")
         f.write(f"R^2: {r2}\n")
         f.write(f"MAE: {mae}\n")
     
-    scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id, save_dir, n_seeds)
+    scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id, save_dir)
 
 if __name__ == "__main__":
     input_conn = sys.argv[1]
     input_func = sys.argv[2]
-    n_seeds = sys.argv[3]  # to put right name when saving
 
-    main(input_conn, input_func, n_seeds)
+    main(input_conn, input_func)

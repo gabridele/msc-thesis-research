@@ -35,6 +35,7 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
     #slice to get only relevant dimension (for correlation purposes)
     p_diff = p_diff[:, 0, 0]
 
+
     ## EMPIRICAL MATRICES
     e_low_avg = (e_low_1500 + e_low_3000 + e_low_4500) / 3
     e_high_avg = (e_high_1500 + e_high_3000 + e_high_4500) / 3
@@ -56,6 +57,7 @@ def avg_contrast(p_low_1500, p_low_3000, p_low_4500, p_high_1500, p_high_3000, p
 
 def scatter_plot_func(p_diff, e_diff, spearman_corr, spearman_p_val, sub_id=None, save_dir=None):
     
+    # make sure value is of float type
     spearman_corr = float(spearman_corr)
     spearman_p_val = float(spearman_p_val)
     
