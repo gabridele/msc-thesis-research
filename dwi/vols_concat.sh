@@ -1,3 +1,5 @@
+# add header to single parcel file
+# run locally because used parallel library
 function header {
  input="$1"
  file_name=$(basename "$input")
@@ -24,7 +26,7 @@ rm "./input_files.txt"
 cd ..
 
 
-
+# create a tsv storing all the volumes of the parcels of all subjects
 function vols_concat {
   output_file="./concat_vols.tsv"
   temp_dir=$(mktemp -d)
