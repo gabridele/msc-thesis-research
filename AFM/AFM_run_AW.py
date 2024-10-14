@@ -1,3 +1,8 @@
+################################
+# code to run AFM via Association Weight
+###############################
+
+# import necessary libraries
 import sys
 import os
 import re
@@ -9,9 +14,10 @@ from sklearn.metrics import r2_score, mean_absolute_error
 
 def activity_flow_conn(conn_array, func_array):
     
-    taskActMatrix = func_array #shape parcel x timeseries x subj
-    connMatrix = conn_array # shape parcel x parcel x state x subj
+    taskActMatrix = func_array # 3D shape parcel x timeseries x subj
+    connMatrix = conn_array # 4D shape parcel x parcel x state x subj
 
+    # define dimensions
     numTasks = taskActMatrix.shape[1]
     numRegions = taskActMatrix.shape[0]
     numConnStates = connMatrix.shape[2]
@@ -22,12 +28,15 @@ def activity_flow_conn(conn_array, func_array):
     taskActualMatrix = taskActMatrix
     regionNumList = np.arange(numRegions)
 
+    # iterate through each subject
     for subjNum in range(numSubjs):
+        # iterate thru each task
         for taskNum in range(numTasks):
 
             # Get this subject's activation pattern for this task
             taskActVect = taskActMatrix[:, taskNum, subjNum]
-
+            
+            # iterate thru each region
             for regionNum in range(numRegions):
 
                 # Hold out region whose activity is being predicted
@@ -49,7 +58,7 @@ def activity_flow_conn(conn_array, func_array):
 
     return taskPredMatrix
 
-# Function to load union indices for a specific subject from Excel file
+# the following functions are used to restore the 'cleaned up' matrices to their original size, by reinserting the removed indices
 def load_union_indices(subject, union_file):
     df = pd.read_excel(union_file)
     row = df.loc[df['subject'] == subject]
@@ -63,8 +72,6 @@ def load_union_indices(subject, union_file):
     
 def restore_matrix(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.DataFrame:
     """
-    Add use cases.
-
     Arguments:
         `data`: a pandas DataFrame, a square matrix
         `cols_and_rows_to_insert`: a list of integers, the indexes of the columns and rows to insert
@@ -94,8 +101,6 @@ def restore_matrix(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd
 
 def restore_array(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.DataFrame:
     """
-    Add use cases.
-
     Arguments:
         `data`: a pandas DataFrame, a square matrix
         `cols_and_rows_to_insert`: a list of integers, the indexes of the columns and rows to insert
@@ -123,7 +128,6 @@ def restore_array(data: pd.DataFrame, cols_and_rows_to_insert: list[int]) -> pd.
 
     return data
 
-# 1. Restore rows and columns in SC and AW
 def restore_sc_matrix(subject, mod_csv_file, union_file):
     union_indices = load_union_indices(subject, union_file)
     print(union_indices)
@@ -143,6 +147,9 @@ def restore_task_matrix(subject, mod_task_file, union_file):
 
     return restored_array
 
+##### end of restoring functions
+
+# function to create scatter plots
 def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=None, save_dir=None, n_seeds=None):
     
     # make sure value is of float type
@@ -178,23 +185,29 @@ def scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id=No
 def main(input_conn, input_func, n_seeds):
     
     base_name = os.path.basename(input_conn)
+    # get sub ID
     sub_id = re.search(r'sub-\d+', base_name).group(0)
+    # define file with indices to add back
     union_file = "nan_indices_with_union.xlsx"
     print(sub_id)
 
+    # load matrices
     conn_array = pd.read_csv(input_conn, delimiter=',', header=None, dtype=float).to_numpy()
     func_array = np.load(input_func)
 
+    # expand mtrx dimensions to fit AFM function
     func_array = np.expand_dims(func_array, axis=2)
     conn_array = np.expand_dims(conn_array, axis=2)
     conn_array = np.expand_dims(conn_array, axis=3)
     print('func shape', func_array.shape)
     print('conn shape', conn_array.shape)
 
+    # run AFM
     taskPredMatrix = activity_flow_conn(conn_array, func_array)
     
     save_dir = f'derivatives/output_AFM_{n_seeds}'
-
+    
+    # restore matrices to original shape
     restored_sc_matrix = restore_task_matrix(sub_id, taskPredMatrix[:, 0,], union_file)
     restored_func = restore_task_matrix(sub_id, func_array[:, 0,], union_file)
 
@@ -225,6 +238,7 @@ def main(input_conn, input_func, n_seeds):
         f.write(f"R^2: {r2}\n")
         f.write(f"MAE: {mae}\n")
     
+    # create scatter plot
     scatter_plot_func(p_array, e_array, spearman_corr, spearman_p_val, sub_id, save_dir, n_seeds)
 
 if __name__ == "__main__":
