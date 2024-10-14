@@ -1,9 +1,14 @@
+#############
+# code to compute mean correlations across the AFM outputs within a scenario to have overall view. Divided by condition as well as total average
+# you should cd to directory containing txt files with correlations
+#############
+
 import os
 import glob
 import re
 import numpy as np
 
-
+# from the output txts of AFM, extract the spearman correlation value
 def get_spearman_correlation(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -16,6 +21,7 @@ def get_spearman_correlation(file_path):
         else:
             raise ValueError(f"Spearman correlation not found in file {file_path}")
 
+# main function to compute average of correlations
 def compute_mean_correlations(directory):
     file_pattern = os.path.join(directory, "*.txt")
     files = glob.glob(file_pattern)
@@ -27,7 +33,7 @@ def compute_mean_correlations(directory):
         correlation = get_spearman_correlation(file_path)
         correlations.append(correlation)
         
-        # Determine the subject group based on the filename
+        # determine the subject group based on the filename
         file_name = os.path.basename(file_path)
         subject_id = re.search(r"sub-(\d+)_", file_name).group(1)
         
@@ -51,6 +57,7 @@ directory = os.getcwd()
 # compute mean correlations
 overall_mean, group_means = compute_mean_correlations(directory)
 
+# save to file
 output_file = "mean_spearman_correlations.txt"
 with open(output_file, 'w') as f:
     f.write(f"Overall Mean Spearman Correlation: {overall_mean}\n")
