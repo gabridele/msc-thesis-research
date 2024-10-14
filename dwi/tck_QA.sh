@@ -1,3 +1,5 @@
+# script to get homotopic connections of three different brain areas (frontal, motor, visual). For visual quality check. Approach later discarded in favor of counting commissural fibers 
+
 path_der='derivatives/'
 
 function QA_tck {
