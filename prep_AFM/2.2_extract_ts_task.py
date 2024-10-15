@@ -1,7 +1,6 @@
-from nilearn import image, regions # type: ignore
+from nilearn import image, regions
 import numpy as np
 import os
-from scipy import stats
 import glob
 from multiprocessing import Pool
 
@@ -17,14 +16,13 @@ def extract_ts(subject_name):
     )
 
     ts = ts.T
+    ts = ts[:, :1]
+    
+    sub_name_no_ending = os.path.basename(subject_name).rsplit('.', 2)[0]
+    sub_name_no_2vol = sub_name_no_ending.replace('_2vol', '')
 
-    correlation_matrix = np.corrcoef(ts)
-
-    # Set the diagonal to NaN
-    #np.fill_diagonal(correlation_matrix, 0)
-
-    output_path = os.path.join(out_dir, sub_id, 'func', sub_id + '_rs_correlation_matrix.npy')
-    np.save(output_path, correlation_matrix)
+    output_path = os.path.join(out_dir, 'derivatives', sub_id, 'func', sub_name_no_2vol + '_1vol.npy')
+    np.save(output_path, ts)
 
 def main():
     
@@ -33,13 +31,13 @@ def main():
 
     path_to_atlas = os.path.join(os.getcwd(), 'derivatives', 'templates', 'Schaefer2018_400Parcels_Tian_Subcortex_S4_2mm_2009c_NLinAsymm.nii.gz')
 
-    out_dir = os.path.join(os.getcwd(), 'derivatives')
-   
-    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', 'sub-*_regressed_smoothed_resampled.nii.gz')
+    out_dir = os.path.join(os.getcwd())
+
+    single_files = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'func', '*_2vol_ts.nii.gz')
 
     subjects = sorted(glob.glob(single_files))
 
-    with Pool(processes = 140) as pool:
+    with Pool(processes=140) as pool:
         pool.map(extract_ts, subjects)
 
 if __name__ == '__main__':

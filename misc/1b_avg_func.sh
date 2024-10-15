@@ -23,8 +23,8 @@ function avg_wm {
 
   3dMean -prefix "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" ${tmp_dir}/high_wm_condition*.nii.gz
   
-  # high-low
-  3dcalc -a "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" -b "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz"  -expr 'a - b' -prefix "$output"
+  # low-high
+  3dcalc -a "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz" -b "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" -expr 'a - b' -prefix "$output"
  
   mv "${tmp_dir}/avg_low_wm_${sub_id}.nii.gz" "${sub_path}/avg_low_wm_${sub_id}.nii.gz"
   mv "${tmp_dir}/avg_high_wm_${sub_id}.nii.gz" "${sub_path}/avg_high_wm_${sub_id}.nii.gz"

@@ -1,6 +1,7 @@
 #!/bin/bash
+# script to create a fake timeseries by concatenating to the single volume a copy of itself
 
-path_dl="derivatives/preproc_dl"
+path_der="derivatives"
 
 function fake_ts {
   input="$1"
@@ -14,13 +15,13 @@ function fake_ts {
 
 export -f fake_ts
 
-find "$path_dl" -type f -name '*mean_cope_resampled.nii.gz' > "$path_dl/fake_ts_files.txt"
+find "$path_der" -type f -name '*mean_cope_resampled.nii.gz' > "$path_der/fake_ts_files.txt"
 
 N=100
 (
-for ii in $(cat "$path_dl/fake_ts_files.txt"); do 
+for ii in $(cat "$path_der/fake_ts_files.txt"); do 
    ((i=i%N)); ((i++==0)) && wait
    fake_ts "$ii" & 
 done
 )
-rm "$path_dl/fake_ts_files.txt"
+rm "$path_der/fake_ts_files.txt"
