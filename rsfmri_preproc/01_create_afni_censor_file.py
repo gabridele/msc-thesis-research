@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Wed Sep 28 08:53:00 2022
 
 @author: ludovicocoletta
 """
+# script to create censor files based on set threshold, in order to later flag those volumes with excessive motion and perform interpolation
 
 import os 
 import numpy as np

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script performs nuisance regression and bandpass filtering as implemented by AFNI's 3dTproject (i.e simultaeous regression and bp).
+# This script performs nuisance regression as implemented by AFNI's 3dTproject (for bandpass filtering, see next script).
 # Volumes flagged for high motion are interpolated before the regression
 # time series are normalized to have sum of squares = 1
 # -----------------------------------------------------------
@@ -19,19 +19,24 @@ function regress_nuisance_subject {
     subject=$(basename $ts _masked.nii.gz)
     sub_folder=$(dirname $ts)
     
-    # EDIT passband (range of frequences to keep) and TR if needed
-    3dTproject \
-         -input $ts \
-         -prefix $output \
-         -censor $censor \
-         -cenmode NTRP \
-         -ort $regr_file \
-         -polort 2 \
-         -TR 2 \
-         -mask $mask \
-         -norm \
-         -verb \
-         &> ${sub_folder}/log_${sub_id}_nuisance_regression.txt
+    if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
+
+     # edit TR if needed
+     3dTproject \
+          -input $ts \
+          -prefix $output \
+          -censor $censor \
+          -cenmode NTRP \
+          -ort $regr_file \
+          -polort 2 \
+          -TR 2 \
+          -mask $mask \
+          -norm \
+          -verb \
+          &> ${sub_folder}/log_${sub_id}_nuisance_regression.txt
+    else
+     echo -e "\n Subject $sub_id is excluded. Skipping..."
+    fi
 
 }
 

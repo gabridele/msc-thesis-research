@@ -1,4 +1,5 @@
-#!/bin/bash
+# !/bin/bash
+## script to run python file for creating censor files in parallel. Set N to your likings
 
 path_der="derivatives/"
 

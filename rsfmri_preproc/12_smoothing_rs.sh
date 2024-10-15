@@ -1,5 +1,6 @@
 #!/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
+# script to smooth data with 4mm option
 path_der="derivatives/"
 
 #1
@@ -12,7 +13,7 @@ function smooth {
  mask="${input%_regressed*}_task-rest_bold_space-MNI152NLin2009cAsym_brainmask.nii.gz" 
  output="${input%_regressed*}_regressed_smoothed.nii.gz"
 
- #if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
+ if grep -q "^$sub_id$" "subject_id_with_exclusions.txt"; then
         
   echo -e "\n Processing input: $input ..."
   echo -e "\n With mask: $mask..."
@@ -23,9 +24,9 @@ function smooth {
     3dBlurInMask -input "$input" -mask "$mask" -FWHM 4 -prefix "$output"
     echo -e "\n Smoothed $input and saved as $output"
   fi
- #else
-  #echo -e "\n Subject $sub_id is excluded. Skipping..."
- #fi
+ else
+  echo -e "\n Subject $sub_id is excluded. Skipping..."
+ fi
 }
 
 export -f smooth

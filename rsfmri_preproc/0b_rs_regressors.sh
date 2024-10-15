@@ -1,5 +1,7 @@
-#!/bin/bash
+# !/bin/bash
 ##!!! working directory must be that of dataset ~/spreading_dynamics_clinical
+## path to extract physiological noise (first 5 acompcor) and compute the motion regressors: extract the 6 basic ones, their square, their derivative, their squared derivative (tot. 24) from *confounds.tsv file
+
 path_der="derivatives/"
 
 #0.1
@@ -30,7 +32,7 @@ function regr_file {
         # Extract column from meanTS csf file
         #cut -f 1 $(basename "$csf_file") > "csf_column.tsv"
 
-      # Loop thru column index of physiological noise and motion noise
+        # Loop thru column index of physiological noise (first 5 of acompcor)
 
         for index in {13..17}; do
             echo "Processing column $index of $sub_id"
@@ -48,13 +50,14 @@ function regr_file {
             #echo -e "$(head -n 1 "$input" | awk -v col="$index" -F'\t' '{print $col "_der"}')\n$(cat "derivative_column_${index}.tsv")" > "derivative_column_${index}.tsv"
 
             # Compute squared derivatives using 1deval
-           # 1deval -expr 'a*a' -a "derivative_column_${index}.tsv" > "squared_derivative_column_${index}.tsv"
+            # 1deval -expr 'a*a' -a "derivative_column_${index}.tsv" > "squared_derivative_column_${index}.tsv"
             #echo -e "$(head -n 1 "$input" | awk -v col="$index" -F'\t' '{print $col "_der2"}')\n$(cat "squared_derivative_column_${index}.tsv")" > "squared_derivative_column_${index}.tsv"
 
             # Pasting all $index columns together 
             paste "temp_column_${index}.tsv" >> "temp_combined_columns_${index}.tsv"
         done
 
+        # Loop thru column index of motion noise
         for index in {19..24}; do
             echo "Processing column $index of $sub_id"
 

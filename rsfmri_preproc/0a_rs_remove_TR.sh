@@ -1,7 +1,7 @@
-#!/bin/bash
+# !/bin/bash
 path_der="derivatives/"
 
-
+# script used to remove the first 4 volumes of the timeseries, following Hearne et al. 2021 study
 function remove_TR {
 
     t_min="4"
