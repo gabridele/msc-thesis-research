@@ -55,7 +55,7 @@ def process_files_and_compute_mean(csv_files):
     for csv_path in csv_files:
         # Extract subject ID from the CSV file path
         file_name = os.path.basename(csv_path)
-        subject_id_match = re.search(r"sub-(\d+)_", file_name)
+        subject_id_match = re.search(r"sub-(\d+)", file_name)
         if not subject_id_match:
             print(f"Subject ID not found in file name: {csv_path}")
             continue
