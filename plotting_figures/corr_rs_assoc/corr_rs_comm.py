@@ -9,7 +9,8 @@ from scipy.stats import spearmanr
 def compute_spearman_correlation(csv_path, npy_path):
     array_csv = pd.DataFrame.to_numpy(pd.read_csv(csv_path, header=None))
     array_npy = np.load(npy_path)
-    
+    print(array_csv.shape)
+    print(array_npy.shape)
     assert array_csv.shape == array_npy.shape, "Arrays must be the same shape to compute Spearman correlation"
     
     upper_csv = np.triu(array_csv)
