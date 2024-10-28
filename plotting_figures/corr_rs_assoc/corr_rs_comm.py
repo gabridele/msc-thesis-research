@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import spearmanr
 
 def compute_spearman_correlation(csv_path, npy_path):
-    array_csv = pd.DataFrame.to_numpy(pd.read_csv(csv_path, header=0))
+    array_csv = pd.DataFrame.to_numpy(pd.read_csv(csv_path, header=0, index_col=0))
     array_npy = np.load(npy_path)
     print(array_csv.shape)
     print(array_npy.shape)
