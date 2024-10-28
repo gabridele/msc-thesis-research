@@ -62,7 +62,7 @@ def process_files_and_compute_mean(csv_files):
         subject_id = subject_id_match.group(1)
         # Construct the NPY file path using the subject ID
 
-        npy_file_name = f"restored_functional_conectivity_sub-{subject_id}.npy"
+        npy_file_name = f"restored_functional_connectivity_sub-{subject_id}.npy"
         npy_path = os.path.join(os.getcwd(), 'derivatives', f'sub-{subject_id}', 'func', npy_file_name)
         if not os.path.exists(npy_path):
             print(f"Matching NPY file not found for {csv_path}")
