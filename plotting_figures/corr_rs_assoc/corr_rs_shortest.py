@@ -91,7 +91,7 @@ def process_files_and_compute_mean(csv_files):
     return overall_mean, group_means
 
 # Define the path pattern for CSV files
-csv_pattern = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'dwi', 'communicability_sub-*.csv')
+csv_pattern = os.path.join(os.getcwd(), 'derivatives', 'sub*', 'dwi', 'shortest_weighted_paths_sub-*.csv')
 
 # Find all CSV files matching the pattern
 csv_files = glob.glob(csv_pattern)
@@ -100,7 +100,7 @@ csv_files = glob.glob(csv_pattern)
 overall_mean, group_means = process_files_and_compute_mean(csv_files)
 
 # Save the results to a text file
-output_file = "mean_spearman_correlations_comm-rs.txt"
+output_file = "mean_spearman_correlations_shortest_w-rs.txt"
 with open(output_file, 'w') as f:
     f.write(f"Overall Mean Spearman Correlation: {overall_mean}\n")
     for group, mean in group_means.items():
