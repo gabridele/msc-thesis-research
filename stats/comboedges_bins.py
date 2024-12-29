@@ -23,9 +23,7 @@ def define_bins(combined_edges):
     all_lengths = [length for lengths in combined_edges.values() for length in lengths]
     M = len(all_lengths)  # Total number of edges in the consensus network
 
-    # Use multiprocessing to parallelize the percentile calculation
-    with Pool(processes=min(140, cpu_count())) as pool:
-        percentiles = pool.apply(calculate_percentiles, (all_lengths, M))
+    percentiles = calculate_percentiles(all_lengths, M)
 
     bins = [(percentiles[i], percentiles[i + 1]) for i in range(len(percentiles) - 1)]
     return bins
