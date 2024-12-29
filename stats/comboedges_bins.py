@@ -4,7 +4,6 @@ import numpy as np
 import argparse
 import pickle
 from collections import defaultdict
-from multiprocessing import Pool, cpu_count
 
 def extract_edges(stacked_matrices):
     n, _, num_subjects = stacked_matrices.shape
