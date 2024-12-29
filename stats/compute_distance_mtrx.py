@@ -41,10 +41,8 @@ def save_distance_matrix(matrix, output_path):
 csv_file = "derivatives/templates/atlas_2mm_2009c_coordinates.csv"
 coords = load_coordinates(csv_file)
 
-# Step 2: Compute the distance matrix
+# Step 2: Compute the distance matrix and save to csv
 distance_matrix = compute_distance_matrix(coords)
-
-# Step 3: Save the distance matrix to a CSV file
 output_csv_file = "derivatives/templates/2mm_2009c_distance_matrix.csv"
 save_distance_matrix(distance_matrix, output_csv_file)
 
