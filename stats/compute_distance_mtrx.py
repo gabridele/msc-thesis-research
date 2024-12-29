@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.spatial.distance import cdist
 import pandas as pd
 
@@ -27,12 +28,25 @@ def load_coordinates(csv_path):
     
     return coordinates
 
-# Example Usage
-csv_file = "/Users/gabrieledele/Library/Containers/io.mountainduck/Data/Library/Application Support/Mountain Duck/Volumes.noindex/192.168.176.122 – SFTP.localized/Desktop/irbio_folder/spreading_dynamics_clinical/derivatives/templates/atlas_2mm_2009c_coordinates.csv"  # Replace with your CSV file path
+def save_distance_matrix(matrix, output_path):
+    """
+    Save the distance matrix to a CSV file.
+    
+    :param matrix: [node x node] distance matrix
+    :param output_path: Path to the output CSV file
+    """
+    np.savetxt(output_path, matrix, delimiter=',')
+    print(f"Distance matrix saved to {output_path}")
+    
+csv_file = "derivatives/templates/atlas_2mm_2009c_coordinates.csv"
 coords = load_coordinates(csv_file)
 
 # Step 2: Compute the distance matrix
 distance_matrix = compute_distance_matrix(coords)
+
+# Step 3: Save the distance matrix to a CSV file
+output_csv_file = "derivatives/templates/2mm_2009c_distance_matrix.csv"
+save_distance_matrix(distance_matrix, output_csv_file)
 
 # Print the result
 print("Coordinates:")
