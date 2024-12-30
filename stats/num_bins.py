@@ -1,20 +1,33 @@
-#!/usr/bin/env python3
-#13846989
-import numpy as np
 import argparse
+import numpy as np
 
-def load_bins(bins_path):
-    bins = np.load(bins_path, allow_pickle=True)
-    return bins
+def num_bins(data):
+    """
+    Determine the number of bins heuristically as the square root of the mean binary density across participants.
+    
+    Parameters:
+    data (numpy.ndarray): An n x n x subjects array.
+    
+    Returns:
+    int: The number of bins.
+    """
+    # Binarize the data
+    binary_data = (data > 0).astype(int)
+    
+    # Calculate the mean binary density across participants
+    mean_density = np.mean(binary_data)
+    
+    # Determine the number of bins
+    num_bins = int(np.sqrt(mean_density))
+    
+    return num_bins
 
-def main():
-    parser = argparse.ArgumentParser(description="Load bins and print the number of bins.")
-    parser.add_argument("bins_path", type=str, help="Path to the bins file")
-    args = parser.parse_args()
-
-    bins = load_bins(args.bins_path)
-    num_bins = len(bins)
-    print("Number of Bins:", num_bins)
-
+# Example usage
 if __name__ == "__main__":
-    main()
+    # Example data: 3x3x2 array
+    parser = argparse.ArgumentParser(description="Get number of bins.")
+    parser.add_argument("input_path", type=str, help="Path to the .npy file containing the data")
+    args = parser.parse_args()
+    data = np.load(args.input_path)
+    bins = num_bins(data)
+    print(f"Number of bins: {bins}")
