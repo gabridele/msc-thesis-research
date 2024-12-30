@@ -11,7 +11,9 @@ def num_bins(data):
     Returns:
     int: The number of bins.
     """
-    N = data.shape[0]
+    N, M, subjects = data.shape
+    if N != M:
+        raise ValueError("Input data must contain square adjacency matrices (n x n x subjects).")
 
     # Convert adjacency matrices to binary (nonzero values become 1)
     binary_data = (data != 0).astype(int)
@@ -24,7 +26,7 @@ def num_bins(data):
     mean_binary_density = np.mean(binary_densities)
 
     # Compute the number of bins as the square root of the mean binary density
-    num_bins = int(np.sqrt(mean_binary_density))
+    num_bins = np.sqrt(mean_binary_density)
 
     return num_bins
 
